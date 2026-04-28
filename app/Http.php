@@ -1,3 +1,8 @@
 <?php
-// Placeholder para app/Http.php de Laravel
-// Reemplaza por la estructura real de un proyecto Laravel.
+
+namespace App;
+
+class Http
+{
+    // Clase de marcador, compatible con PSR-4 si alguna parte del proyecto la requiere.
+}

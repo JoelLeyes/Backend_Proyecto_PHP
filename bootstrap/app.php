@@ -1,5 +1,24 @@
 <?php
-// Placeholder para bootstrap/app.php de Laravel
-// Reemplaza por el archivo real de un proyecto Laravel para funcionalidad completa.
 
-return [];
+use Illuminate\Foundation\Application;
+
+$app = new Application(
+    $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
+);
+
+$app->singleton(
+    Illuminate\Contracts\Http\Kernel::class,
+    App\Http\Kernel::class
+);
+
+$app->singleton(
+    Illuminate\Contracts\Console\Kernel::class,
+    App\Console\Kernel::class
+);
+
+$app->singleton(
+    Illuminate\Contracts\Debug\ExceptionHandler::class,
+    App\Exceptions\Handler::class
+);
+
+return $app;
