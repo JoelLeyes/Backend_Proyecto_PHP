@@ -1,0 +1,6 @@
+#!/usr/bin/env php
+<?php
+// Archivo placeholder para 'artisan' de Laravel.
+// Reemplaza este archivo por el original de un proyecto Laravel real para funcionalidad completa.
+
+exit("Este es un placeholder de 'artisan'. Copia el archivo real de un proyecto Laravel.\n");
