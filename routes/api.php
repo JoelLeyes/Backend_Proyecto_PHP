@@ -30,6 +30,7 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('cerrar-sesion', [AuthController::class, 'cerrarSesion']);
         Route::get('perfil', [AuthController::class, 'perfil']);
+        Route::put('perfil', [AuthController::class, 'actualizarPerfil']);
     });
 });
 

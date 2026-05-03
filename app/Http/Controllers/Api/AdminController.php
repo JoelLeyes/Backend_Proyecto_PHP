@@ -12,17 +12,15 @@ use Illuminate\Http\Request;
 /**
  * Controlador del panel administrativo.
  * Solo accesible para usuarios con rol "admin".
- * Permite monitorear estadísticas y gestionar usuarios.
  */
 class AdminController extends Controller
 {
     /**
      * GET /api/admin/estadisticas
-     * Retorna métricas generales del sistema: usuarios, reservas y profesionales.
      */
     public function estadisticas(): JsonResponse
     {
-        $datos = [
+        return response()->json([
             'usuarios' => [
                 'total'         => User::count(),
                 'clientes'      => User::where('rol', 'cliente')->count(),
@@ -39,14 +37,12 @@ class AdminController extends Controller
                 'activos'   => Profesional::where('activo', true)->count(),
                 'inactivos' => Profesional::where('activo', false)->count(),
             ],
-        ];
-
-        return response()->json($datos);
+        ]);
     }
 
     /**
      * GET /api/admin/usuarios
-     * Lista todos los usuarios con filtros opcionales por rol y búsqueda.
+     * Lista usuarios con filtros opcionales.
      */
     public function usuarios(Request $request): JsonResponse
     {
@@ -63,10 +59,21 @@ class AdminController extends Controller
 
     /**
      * PATCH /api/admin/usuarios/{usuario}/activar
-     * Activa o desactiva un usuario (funcionalidad a implementar con campo activo).
+     * Activa o desactiva un usuario. No permite actuar sobre el propio admin.
      */
-    public function activarDesactivar(User $usuario): JsonResponse
+    public function activarDesactivar(Request $request, User $usuario): JsonResponse
     {
-        return response()->json(['mensaje' => 'Funcionalidad pendiente de implementar.'], 501);
+        if ($usuario->id === $request->user()->id) {
+            return response()->json(['error' => 'No podés desactivar tu propia cuenta.'], 422);
+        }
+
+        $usuario->update(['activo' => !$usuario->activo]);
+
+        $estado = $usuario->activo ? 'activado' : 'desactivado';
+
+        return response()->json([
+            'usuario' => $usuario,
+            'mensaje' => "Usuario {$estado} correctamente.",
+        ]);
     }
 }

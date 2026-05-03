@@ -146,7 +146,7 @@ class DisponibilidadController extends Controller
             ->first();
 
         if ($excepcion && !$excepcion->disponible) {
-            return response()->json(['horarios' => []]);
+            return response()->json([]);
         }
 
         // Buscar reglas de ese día de la semana
@@ -156,7 +156,7 @@ class DisponibilidadController extends Controller
             ->get();
 
         if ($reglas->isEmpty()) {
-            return response()->json(['horarios' => []]);
+            return response()->json([]);
         }
 
         // Reservas ya existentes para ese profesional en esa fecha
@@ -189,13 +189,16 @@ class DisponibilidadController extends Controller
                 }
 
                 if ($disponible) {
-                    $horariosDisponibles[] = $actual->format('H:i');
+                    $horariosDisponibles[] = [
+                        'inicio' => $actual->format('Y-m-d H:i:s'),
+                        'fin'    => $finSlot->format('Y-m-d H:i:s'),
+                    ];
                 }
 
                 $actual->addMinutes($servicio->duracion_minutos + $regla->buffer_despues_minutos);
             }
         }
 
-        return response()->json(['horarios' => $horariosDisponibles]);
+        return response()->json($horariosDisponibles);
     }
 }

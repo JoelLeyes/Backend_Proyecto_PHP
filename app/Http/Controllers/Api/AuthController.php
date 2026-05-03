@@ -12,7 +12,7 @@ use Illuminate\Validation\Rules\Password;
 
 /**
  * Controlador de autenticación.
- * Gestiona el registro, inicio de sesión y cierre de sesión
+ * Gestiona el registro, inicio de sesión, cierre de sesión y perfil
  * usando tokens de Sanctum (Bearer Token).
  */
 class AuthController extends Controller
@@ -47,7 +47,7 @@ class AuthController extends Controller
         $token = $usuario->createToken('token_acceso')->plainTextToken;
 
         return response()->json([
-            'usuario' => $usuario,
+            'usuario' => $usuario->load('profesional'),
             'token'   => $token,
         ], 201);
     }
@@ -72,7 +72,7 @@ class AuthController extends Controller
         $token = $usuario->createToken('token_acceso')->plainTextToken;
 
         return response()->json([
-            'usuario' => $usuario,
+            'usuario' => $usuario->load('profesional'),
             'token'   => $token,
         ]);
     }
@@ -94,8 +94,27 @@ class AuthController extends Controller
      */
     public function perfil(Request $request): JsonResponse
     {
-        $usuario = $request->user()->load('profesional');
+        return response()->json($request->user()->load('profesional'));
+    }
 
-        return response()->json($usuario);
+    /**
+     * PUT /api/auth/perfil
+     * Actualiza los datos personales del usuario autenticado.
+     */
+    public function actualizarPerfil(Request $request): JsonResponse
+    {
+        $usuario = $request->user();
+
+        $validados = $request->validate([
+            'name'     => 'sometimes|string|max:255',
+            'telefono' => 'nullable|string|max:20',
+        ]);
+
+        $usuario->update($validados);
+
+        return response()->json([
+            'usuario'  => $usuario->fresh()->load('profesional'),
+            'mensaje'  => 'Perfil actualizado correctamente.',
+        ]);
     }
 }
