@@ -2,21 +2,24 @@
 
 namespace App\Providers;
 
+use App\Models\Profesional;
+use App\Models\Reserva;
+use App\Policies\ProfesionalPolicy;
+use App\Policies\ReservaPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
-        // 'App\\Models\\Model' => 'App\\Policies\\ModelPolicy',
+        Profesional::class => ProfesionalPolicy::class,
+        Reserva::class     => ReservaPolicy::class,
     ];
 
     public function boot(): void
     {
         $this->registerPolicies();
 
-        Gate::define('admin', function ($user) {
-            return isset($user->role) && $user->role === 'admin';
-        });
+        Gate::define('admin', fn($user) => $user->esAdmin());
     }
 }

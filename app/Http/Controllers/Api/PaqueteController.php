@@ -49,6 +49,27 @@ class PaqueteController extends Controller
     }
 
     /**
+     * PUT /api/profesionales/{profesional}/servicios/{servicio}/paquetes/{paquete}
+     * Actualiza los datos de un paquete de servicio.
+     */
+    public function update(Request $request, Profesional $profesional, Servicio $servicio, PaqueteServicio $paquete): JsonResponse
+    {
+        $this->authorize('manage', $profesional);
+
+        $validados = $request->validate([
+            'nombre'            => 'sometimes|string|max:255',
+            'descripcion'       => 'nullable|string',
+            'cantidad_sesiones' => 'sometimes|integer|min:2|max:100',
+            'precio'            => 'sometimes|numeric|min:0',
+            'activo'            => 'sometimes|boolean',
+        ]);
+
+        $paquete->update($validados);
+
+        return response()->json($paquete);
+    }
+
+    /**
      * DELETE /api/profesionales/{profesional}/servicios/{servicio}/paquetes/{paquete}
      * Desactiva un paquete de servicio (no se elimina para preservar historial).
      */
@@ -71,6 +92,10 @@ class PaqueteController extends Controller
     {
         $paquetes = PaqueteCliente::where('cliente_id', $request->user()->id)
             ->with('paqueteServicio.servicio.profesional.usuario')
+            ->when($request->filled('servicio_id'), fn($q) =>
+                $q->whereHas('paqueteServicio', fn($s) => $s->where('servicio_id', $request->servicio_id))
+            )
+            ->when($request->filled('estado'), fn($q) => $q->where('estado', $request->estado))
             ->orderByDesc('fecha_compra')
             ->get();
 

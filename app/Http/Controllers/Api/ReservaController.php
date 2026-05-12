@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\PaqueteCliente;
 use App\Models\Reserva;
 use App\Models\Servicio;
+use App\Services\NotificacionService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +20,7 @@ use Illuminate\Support\Facades\DB;
  */
 class ReservaController extends Controller
 {
+    public function __construct(private NotificacionService $notificaciones) {}
     /**
      * GET /api/reservas
      * Lista las reservas del usuario autenticado.
@@ -26,7 +29,7 @@ class ReservaController extends Controller
     public function index(Request $request): JsonResponse
     {
         $usuario  = $request->user();
-        $consulta = Reserva::with(['servicio', 'cliente', 'profesional']);
+        $consulta = Reserva::with(['servicio.profesional', 'cliente', 'profesional']);
 
         if ($usuario->esCliente()) {
             $consulta->where('cliente_id', $usuario->id);
@@ -60,6 +63,25 @@ class ReservaController extends Controller
 
         $servicio = Servicio::with('profesional')->findOrFail($validados['servicio_id']);
 
+        // Validar paquete si se proporcionó
+        $paqueteCliente = null;
+        if (!empty($validados['paquete_cliente_id'])) {
+            $paqueteCliente = PaqueteCliente::with('paqueteServicio')
+                ->where('id', $validados['paquete_cliente_id'])
+                ->where('cliente_id', $request->user()->id)
+                ->first();
+
+            if (!$paqueteCliente) {
+                return response()->json(['error' => 'El paquete no existe o no te pertenece.'], 422);
+            }
+            if (!$paqueteCliente->tieneSesionesDisponibles()) {
+                return response()->json(['error' => 'Este paquete no tiene sesiones disponibles.'], 422);
+            }
+            if ($paqueteCliente->paqueteServicio->servicio_id !== $servicio->id) {
+                return response()->json(['error' => 'El paquete no corresponde al servicio seleccionado.'], 422);
+            }
+        }
+
         // Control de concurrencia: evitar doble reserva del mismo horario
         $hayConflicto = DB::transaction(function () use ($validados, $servicio) {
             $inicio = Carbon::parse($validados['fecha_hora']);
@@ -88,6 +110,14 @@ class ReservaController extends Controller
             'modalidad'          => $validados['modalidad'],
             'notas'              => $validados['notas'] ?? null,
         ]);
+
+        // Consumir sesión del paquete si se usó uno
+        if ($paqueteCliente) {
+            $paqueteCliente->increment('sesiones_usadas');
+            if ($paqueteCliente->sesiones_usadas >= $paqueteCliente->sesiones_total) {
+                $paqueteCliente->update(['estado' => 'consumido']);
+            }
+        }
 
         return response()->json($reserva->load(['servicio', 'cliente', 'profesional']), 201);
     }
@@ -118,6 +148,9 @@ class ReservaController extends Controller
         }
 
         $reserva->update(['estado' => 'confirmada']);
+        $reserva->load(['servicio', 'cliente', 'profesional']);
+
+        $this->notificaciones->reservaConfirmada($reserva);
 
         return response()->json($reserva);
     }
@@ -136,12 +169,40 @@ class ReservaController extends Controller
             return response()->json(['error' => 'Esta reserva no puede cancelarse en su estado actual.'], 422);
         }
 
+        // Verificar política de cancelación: si cancela el cliente, respetar horas mínimas
+        if ($request->user()->id === $reserva->cliente_id) {
+            $profesional    = $reserva->servicio?->profesional;
+            $horasMinimas   = $profesional?->horas_cancelacion ?? 0;
+            $horasRestantes = now()->diffInHours(Carbon::parse($reserva->fecha_hora), false);
+
+            if ($horasRestantes < $horasMinimas) {
+                return response()->json([
+                    'error' => "No podés cancelar con menos de {$horasMinimas} horas de anticipación.",
+                ], 422);
+            }
+        }
+
         $reserva->update([
             'estado'             => 'cancelada',
             'fecha_cancelacion'  => now(),
             'cancelado_por'      => $request->user()->id,
             'motivo_cancelacion' => $request->input('motivo'),
         ]);
+        $reserva->load(['servicio', 'cliente', 'profesional']);
+
+        // Devolver sesión al paquete si la reserva usaba uno
+        if ($reserva->paquete_cliente_id) {
+            $paquete = PaqueteCliente::find($reserva->paquete_cliente_id);
+            if ($paquete && $paquete->sesiones_usadas > 0) {
+                $nuevasUsadas = $paquete->sesiones_usadas - 1;
+                $paquete->update([
+                    'sesiones_usadas' => $nuevasUsadas,
+                    'estado'          => $nuevasUsadas < $paquete->sesiones_total ? 'activo' : 'consumido',
+                ]);
+            }
+        }
+
+        $this->notificaciones->reservaCancelada($reserva, $request->user());
 
         return response()->json($reserva);
     }
@@ -162,7 +223,10 @@ class ReservaController extends Controller
             return response()->json(['error' => 'Esta reserva no puede reprogramarse.'], 422);
         }
 
-        $reserva->update(['fecha_hora' => $validados['fecha_hora']]);
+        $reserva->update(['fecha_hora' => $validados['fecha_hora'], 'estado' => 'confirmada']);
+        $reserva->load(['servicio', 'cliente', 'profesional']);
+
+        $this->notificaciones->reservaReprogramada($reserva);
 
         return response()->json($reserva);
     }

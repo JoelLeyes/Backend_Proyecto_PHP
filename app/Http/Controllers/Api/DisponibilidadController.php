@@ -125,6 +125,19 @@ class DisponibilidadController extends Controller
     }
 
     /**
+     * DELETE /api/profesionales/{profesional}/disponibilidad/excepciones/{excepcion}
+     * Elimina una excepción de disponibilidad.
+     */
+    public function eliminarExcepcion(Profesional $profesional, ExcepcionDisponibilidad $excepcion): JsonResponse
+    {
+        $this->authorize('manage', $profesional);
+
+        $excepcion->delete();
+
+        return response()->json(['mensaje' => 'Excepción eliminada correctamente.']);
+    }
+
+    /**
      * GET /api/profesionales/{profesional}/disponibilidad/horarios
      * Calcula los horarios disponibles de un profesional para una fecha y servicio dados.
      * Tiene en cuenta las reglas de horario, excepciones y reservas existentes.

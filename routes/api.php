@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Excepciones de disponibilidad (feriados, licencias, etc.)
     Route::get('profesionales/{profesional}/disponibilidad/excepciones', [DisponibilidadController::class, 'excepciones']);
     Route::post('profesionales/{profesional}/disponibilidad/excepciones', [DisponibilidadController::class, 'guardarExcepcion']);
+    Route::delete('profesionales/{profesional}/disponibilidad/excepciones/{excepcion}', [DisponibilidadController::class, 'eliminarExcepcion']);
 
     // Servicios (gestión por el profesional)
     Route::post('profesionales/{profesional}/servicios', [ServicioController::class, 'store']);
@@ -85,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Paquetes de servicio (gestión por el profesional)
     Route::post('profesionales/{profesional}/servicios/{servicio}/paquetes', [PaqueteController::class, 'store']);
+    Route::put('profesionales/{profesional}/servicios/{servicio}/paquetes/{paquete}', [PaqueteController::class, 'update']);
     Route::delete('profesionales/{profesional}/servicios/{servicio}/paquetes/{paquete}', [PaqueteController::class, 'destroy']);
 
     // Reservas
@@ -104,8 +106,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Panel administrativo (solo rol admin)
     Route::middleware('can:admin')->prefix('admin')->group(function () {
-        Route::get('estadisticas', [AdminController::class, 'estadisticas']);
-        Route::get('usuarios', [AdminController::class, 'usuarios']);
-        Route::patch('usuarios/{usuario}/activar', [AdminController::class, 'activarDesactivar']);
+        Route::get('estadisticas',                         [AdminController::class, 'estadisticas']);
+        Route::get('usuarios',                             [AdminController::class, 'usuarios']);
+        Route::put('usuarios/{usuario}',                   [AdminController::class, 'actualizarUsuario']);
+        Route::patch('usuarios/{usuario}/activar',         [AdminController::class, 'activarDesactivar']);
+        Route::get('reservas',                             [AdminController::class, 'reservas']);
     });
 });
