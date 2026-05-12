@@ -1,0 +1,53 @@
+name: deploy-backend
+
+on:
+  workflow_run:
+    workflows: ["Laravel"]
+    types: [completed]
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    env:
+      AWS_REGION: us-east-1
+      EKS_CLUSTER: proyecto_php_cluster
+      K8S_NAMESPACE: proyecto2026
+      ECR_REPOSITORY: proyecto/backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER
+
+      - name: Rollout restart
+        run: |
+          kubectl rollout restart deployment backend -n $K8S_NAMESPACE
+          kubectl rollout status deployment backend -n $K8S_NAMESPACE --timeout=10m
