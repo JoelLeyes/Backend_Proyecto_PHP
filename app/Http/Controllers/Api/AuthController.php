@@ -69,6 +69,10 @@ class AuthController extends Controller
             return response()->json(['error' => 'Credenciales incorrectas.'], 401);
         }
 
+        if (!$usuario->activo) {
+            return response()->json(['error' => 'Tu cuenta está desactivada. Contactá al administrador.'], 403);
+        }
+
         $token = $usuario->createToken('token_acceso')->plainTextToken;
 
         return response()->json([
