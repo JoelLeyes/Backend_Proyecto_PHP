@@ -29,8 +29,9 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('cerrar-sesion', [AuthController::class, 'cerrarSesion']);
-        Route::get('perfil', [AuthController::class, 'perfil']);
-        Route::put('perfil', [AuthController::class, 'actualizarPerfil']);
+        Route::get('perfil',  [AuthController::class, 'perfil']);
+        Route::put('perfil',  [AuthController::class, 'actualizarPerfil']);
+        Route::post('perfil', [AuthController::class, 'actualizarPerfil']); // multipart/form-data con _method=PUT
     });
 });
 

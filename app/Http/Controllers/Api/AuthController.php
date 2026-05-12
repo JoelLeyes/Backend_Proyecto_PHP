@@ -100,21 +100,31 @@ class AuthController extends Controller
     /**
      * PUT /api/auth/perfil
      * Actualiza los datos personales del usuario autenticado.
+     * Acepta multipart/form-data cuando se sube un avatar.
      */
     public function actualizarPerfil(Request $request): JsonResponse
     {
         $usuario = $request->user();
 
         $validados = $request->validate([
-            'name'     => 'sometimes|string|max:255',
-            'telefono' => 'nullable|string|max:20',
+            'name'                 => 'sometimes|string|max:255',
+            'telefono'             => 'nullable|string|max:20',
+            'notificaciones_email' => 'sometimes|boolean',
+            'avatar'               => 'nullable|image|max:2048',
         ]);
+
+        if ($request->hasFile('avatar')) {
+            $ruta = $request->file('avatar')->store('avatars', 'public');
+            $validados['avatar'] = '/storage/' . $ruta;
+        } else {
+            unset($validados['avatar']);
+        }
 
         $usuario->update($validados);
 
         return response()->json([
-            'usuario'  => $usuario->fresh()->load('profesional'),
-            'mensaje'  => 'Perfil actualizado correctamente.',
+            'usuario' => $usuario->fresh()->load('profesional'),
+            'mensaje' => 'Perfil actualizado correctamente.',
         ]);
     }
 }
