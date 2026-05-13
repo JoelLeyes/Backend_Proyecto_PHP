@@ -1,6 +1,7 @@
 FROM php:8.2-cli
 
 RUN apt-get update && apt-get install -y \
+    ca-certificates \
         libpq-dev \
         libzip-dev \
         libicu-dev \
@@ -12,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     && pecl install mongodb \
     && docker-php-ext-enable redis \
     && docker-php-ext-enable mongodb \
+    && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
