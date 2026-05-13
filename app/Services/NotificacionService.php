@@ -2,10 +2,9 @@
 
 namespace App\Services;
 
+use App\Jobs\EnviarNotificacion;
 use App\Models\Reserva;
 use App\Models\User;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Integración con el microservicio de notificaciones.
@@ -102,18 +101,7 @@ class NotificacionService
 
     private function enviar(string $tipo, string $email, string $nombre, array $datos): void
     {
-        try {
-            Http::withHeaders(['X-Token-Servicio' => $this->token])
-                ->timeout(5)
-                ->post("{$this->url}/api/notificar", [
-                    'tipo'           => $tipo,
-                    'email_usuario'  => $email,
-                    'nombre_usuario' => $nombre,
-                    'datos'          => $datos,
-                ]);
-        } catch (\Throwable $e) {
-            Log::warning("Notificación fallida [{$tipo}] para {$email}: {$e->getMessage()}");
-        }
+        EnviarNotificacion::dispatch($tipo, $email, $nombre, $datos, $this->url, $this->token);
     }
 
     private function formatear(mixed $fechaHora): string
