@@ -26,6 +26,8 @@ services:
         condition: service_healthy
     environment:
       APP_ENV: local
+    volumes:
+      - storage_avatars:/app/storage/app/public/avatars
 
   queue:
     build:
@@ -67,3 +69,4 @@ services:
 
 volumes:
   pgdata:
+  storage_avatars:

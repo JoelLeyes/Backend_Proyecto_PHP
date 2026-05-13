@@ -30,7 +30,7 @@ class AuthController extends Controller
             'email'     => 'required|email|unique:users',
             'password'  => ['required', 'confirmed', Password::min(8)],
             'rol'       => 'required|in:cliente,profesional',
-            'telefono'  => 'nullable|string|max:20',
+            'telefono'  => ['nullable', 'regex:/^\+?[\d\s\-()+]{6,20}$/'],
         ]);
 
         $usuario = User::create([
@@ -72,6 +72,10 @@ class AuthController extends Controller
             ]);
 
             return response()->json(['error' => 'Credenciales incorrectas.'], 401);
+        }
+
+        if (!$usuario->activo) {
+            return response()->json(['error' => 'Tu cuenta está desactivada. Contactá al administrador.'], 403);
         }
 
         $token = $usuario->createToken('token_acceso')->plainTextToken;
@@ -118,14 +122,14 @@ class AuthController extends Controller
 
         $validados = $request->validate([
             'name'                 => 'sometimes|string|max:255',
-            'telefono'             => 'nullable|string|max:20',
+            'telefono'             => ['nullable', 'regex:/^\+?[\d\s\-()+]{6,20}$/'],
             'notificaciones_email' => 'sometimes|boolean',
             'avatar'               => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('avatar')) {
             $ruta = $request->file('avatar')->store('avatars', 'public');
-            $validados['avatar'] = '/storage/' . $ruta;
+            $validados['avatar'] = asset('storage/' . $ruta);
         } else {
             unset($validados['avatar']);
         }

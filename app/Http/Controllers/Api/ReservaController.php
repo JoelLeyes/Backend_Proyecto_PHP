@@ -56,12 +56,19 @@ class ReservaController extends Controller
         $validados = $request->validate([
             'servicio_id'       => 'required|exists:servicios,id',
             'fecha_hora'        => 'required|date|after:now',
-            'modalidad'         => 'required|in:presencial,remota,hibrida',
+            'modalidad'         => 'required|in:presencial,remota',
             'notas'             => 'nullable|string|max:500',
             'paquete_cliente_id' => 'nullable|exists:paquetes_cliente,id',
         ]);
 
         $servicio = Servicio::with('profesional')->findOrFail($validados['servicio_id']);
+
+        // Validar que la modalidad sea compatible con el servicio
+        if ($servicio->modalidad !== 'hibrida' && $validados['modalidad'] !== $servicio->modalidad) {
+            return response()->json([
+                'error' => "Este servicio solo acepta modalidad {$servicio->modalidad}.",
+            ], 422);
+        }
 
         // Validar paquete si se proporcionó
         $paqueteCliente = null;
