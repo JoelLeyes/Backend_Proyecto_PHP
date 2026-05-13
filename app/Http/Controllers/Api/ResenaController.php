@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Profesional;
 use App\Models\Reserva;
 use App\Models\Resena;
+use App\Services\NotificacionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,6 +17,8 @@ use Illuminate\Http\Request;
  */
 class ResenaController extends Controller
 {
+    public function __construct(private NotificacionService $notificaciones) {}
+
     /**
      * GET /api/profesionales/{profesional}/resenas
      * Lista las reseñas visibles de un profesional, paginadas.
@@ -55,6 +58,12 @@ class ResenaController extends Controller
             'comentario'   => 'nullable|string|max:1000',
         ]);
 
+        $perfilProfesional = $reserva->profesional?->profesional;
+
+        if (!$perfilProfesional) {
+            return response()->json(['error' => 'No se encontró el perfil profesional asociado.'], 422);
+        }
+
         $resena = Resena::create([
             'reserva_id'      => $reserva->id,
             'evaluador_id'    => $request->user()->id,
@@ -64,15 +73,17 @@ class ResenaController extends Controller
         ]);
 
         // Recalcular el promedio de calificación del profesional
-        $promedio       = Resena::where('profesional_id', $reserva->profesional_id)->avg('calificacion');
-        $totalResenas   = Resena::where('profesional_id', $reserva->profesional_id)->count();
+        $promedio = Resena::where('profesional_id', $reserva->profesional_id)->avg('calificacion');
+        $totalResenas = Resena::where('profesional_id', $reserva->profesional_id)->count();
 
-        $profesional = $reserva->profesional->profesional;
-        $profesional->update([
+        $perfilProfesional->update([
             'promedio_calificacion' => $promedio,
-            'total_calificaciones'  => $totalResenas,
+            'total_calificaciones' => $totalResenas,
         ]);
 
-        return response()->json($resena, 201);
+        $reserva->loadMissing(['cliente', 'profesional', 'servicio']);
+        $this->notificaciones->resenaCreada($reserva, $resena);
+
+        return response()->json($resena->load(['evaluador', 'profesional', 'reserva']), 201);
     }
 }

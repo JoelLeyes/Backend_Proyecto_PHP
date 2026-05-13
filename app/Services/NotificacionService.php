@@ -73,6 +73,23 @@ class NotificacionService
         ]);
     }
 
+    /**
+     * Avisa al profesional cuando recibe una nueva reseña.
+     */
+    public function resenaCreada(Reserva $reserva, mixed $resena): void
+    {
+        $profesional = $reserva->profesional;
+        if (!$this->puedeNotificar($profesional)) return;
+
+        $this->enviar('resena_creada', $profesional->email, $profesional->name, [
+            'nombre_servicio' => $reserva->servicio->nombre,
+            'nombre_cliente'  => $reserva->cliente->name,
+            'fecha_hora'      => $this->formatear($reserva->fecha_hora),
+            'calificacion'    => $resena->calificacion,
+            'comentario'      => $resena->comentario,
+        ]);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private function puedeNotificar(?User $usuario): bool
@@ -86,7 +103,7 @@ class NotificacionService
     private function enviar(string $tipo, string $email, string $nombre, array $datos): void
     {
         try {
-            Http::withHeader('X-Token-Servicio', $this->token)
+            Http::withHeaders(['X-Token-Servicio' => $this->token])
                 ->timeout(5)
                 ->post("{$this->url}/api/notificar", [
                     'tipo'           => $tipo,
