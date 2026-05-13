@@ -36,4 +36,11 @@ return [
         'token' => env('NOTIF_SERVICE_TOKEN', ''),
     ],
 
+    'atlas_logs' => [
+        'enabled'       => env('ATLAS_LOGS_ENABLED', false),
+        'mongodb_uri'   => env('ATLAS_MONGODB_URI', ''),
+        'database'      => env('ATLAS_LOGS_DATABASE', 'proyecto2026_logs'),
+        'collection'    => env('ATLAS_LOGS_COLLECTION', 'logs'),
+    ],
+
 ];

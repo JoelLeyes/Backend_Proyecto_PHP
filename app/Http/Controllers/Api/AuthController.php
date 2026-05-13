@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Profesional;
 use App\Models\User;
+use App\Services\AtlasLogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -56,7 +57,7 @@ class AuthController extends Controller
      * POST /api/auth/iniciar-sesion
      * Verifica credenciales y retorna un token de acceso.
      */
-    public function iniciarSesion(Request $request): JsonResponse
+    public function iniciarSesion(Request $request, AtlasLogService $atlasLogService): JsonResponse
     {
         $validados = $request->validate([
             'email'    => 'required|email',
@@ -66,10 +67,19 @@ class AuthController extends Controller
         $usuario = User::where('email', $validados['email'])->first();
 
         if (!$usuario || !Hash::check($validados['password'], $usuario->password)) {
+            $atlasLogService->registrarConexion($validados['email'], false, [
+                'reason' => 'credenciales_incorrectas',
+            ]);
+
             return response()->json(['error' => 'Credenciales incorrectas.'], 401);
         }
 
         $token = $usuario->createToken('token_acceso')->plainTextToken;
+
+        $atlasLogService->registrarConexion($usuario->email, true, [
+            'user_id' => $usuario->id,
+            'rol' => $usuario->rol,
+        ]);
 
         return response()->json([
             'usuario' => $usuario->load('profesional'),

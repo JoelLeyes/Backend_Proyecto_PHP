@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Services\AtlasLogService;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -24,7 +25,16 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
+            try {
+                app(AtlasLogService::class)->registrarError($e, [
+                    'route' => request()?->path(),
+                    'method' => request()?->method(),
+                    'ip' => request()?->ip(),
+                    'user_email' => request()?->user()?->email,
+                ]);
+            } catch (Throwable) {
+                // No interrumpir el flujo si Atlas no responde.
+            }
         });
     }
 }
