@@ -8,9 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * Modelo Eloquent para la tabla "pagos".
- * Usa relación polimórfica para asociarse a una Reserva o un PaqueteCliente.
- * La relación polimórfica se llama "pagable" (pagable_type + pagable_id).
+ * Modelo de pago — registra cada transacción PayPal vinculada
+ * a una reserva o a un paquete de cliente (relación polimórfica).
  */
 class Pago extends Model
 {
@@ -21,40 +20,30 @@ class Pago extends Model
     protected $fillable = [
         'pagable_type',
         'pagable_id',
-        'pagador_id',
+        'cliente_id',
         'monto',
         'moneda',
+        'paypal_order_id',
+        'paypal_capture_id',
         'estado',
-        'pasarela',
-        'id_transaccion',
-        'fecha_pago',
     ];
 
     protected function casts(): array
     {
         return [
-            'monto'      => 'decimal:2',
-            'fecha_pago' => 'datetime',
+            'monto' => 'decimal:2',
         ];
     }
 
     // ─── Relaciones ────────────────────────────────────────────────────────
 
-    /**
-     * El objeto al que corresponde el pago (Reserva o PaqueteCliente).
-     * Esta es la relación polimórfica: pagable_type indica la clase
-     * y pagable_id indica el id del registro correspondiente.
-     */
     public function pagable(): MorphTo
     {
         return $this->morphTo();
     }
 
-    /**
-     * El usuario que realizó el pago.
-     */
-    public function pagador(): BelongsTo
+    public function cliente(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'pagador_id');
+        return $this->belongsTo(User::class, 'cliente_id');
     }
 }

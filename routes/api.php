@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DisponibilidadController;
+use App\Http\Controllers\Api\PagoController;
 use App\Http\Controllers\Api\PaqueteController;
 use App\Http\Controllers\Api\ProfesionalController;
 use App\Http\Controllers\Api\ResenaController;
@@ -103,6 +104,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Paquetes del cliente
     Route::get('mis-paquetes', [PaqueteController::class, 'misPaquetes']);
     Route::post('paquetes-servicio/{paqueteServicio}/comprar', [PaqueteController::class, 'comprar']);
+
+    // Pagos (PayPal)
+    Route::post('pagos/iniciar',   [PagoController::class, 'iniciar']);
+    Route::post('pagos/capturar',  [PagoController::class, 'capturar']);
+    Route::get('mis-pagos',        [PagoController::class, 'misPagos']);
+    Route::get('profesionales/{profesional}/pagos', [PagoController::class, 'pagosRecibidos']);
 
     // Panel administrativo (solo rol admin)
     Route::middleware('can:admin')->prefix('admin')->group(function () {

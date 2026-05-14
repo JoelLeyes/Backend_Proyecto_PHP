@@ -108,13 +108,17 @@ class PaqueteController extends Controller
      */
     public function comprar(Request $request, PaqueteServicio $paqueteServicio): JsonResponse
     {
+        if (!$paqueteServicio->activo) {
+            return response()->json(['error' => 'Este paquete no está disponible.'], 422);
+        }
+
         $paqueteCliente = PaqueteCliente::create([
             'cliente_id'          => $request->user()->id,
             'paquete_servicio_id' => $paqueteServicio->id,
             'sesiones_total'      => $paqueteServicio->cantidad_sesiones,
             'sesiones_usadas'     => 0,
             'fecha_compra'        => now(),
-            'estado'              => 'activo',
+            'estado'              => 'pendiente_pago',
         ]);
 
         return response()->json($paqueteCliente->load('paqueteServicio'), 201);
