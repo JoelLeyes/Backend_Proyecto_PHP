@@ -30,14 +30,18 @@ class Profesional extends Model
         'longitud',
         'horas_cancelacion',
         'activo',
+        'promedio_calificacion',
+        'total_calificaciones',
     ];
 
     protected function casts(): array
     {
         return [
-            'latitud'  => 'float',
-            'longitud' => 'float',
-            'activo'   => 'boolean',
+            'latitud'               => 'float',
+            'longitud'              => 'float',
+            'activo'                => 'boolean',
+            'promedio_calificacion' => 'float',
+            'total_calificaciones'  => 'integer',
         ];
     }
 
