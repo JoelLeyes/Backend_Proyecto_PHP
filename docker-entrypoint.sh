@@ -17,6 +17,7 @@ if [ ! -f /app/.env ]; then
 APP_ENV=${APP_ENV:-production}
 APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=${APP_URL:-http://localhost}
+APP_KEY=${APP_KEY:-}
 DB_CONNECTION=${DB_CONNECTION:-pgsql}
 DB_HOST=${DB_HOST:-database-1.cexnzzrh862s.us-east-1.rds.amazonaws.com}
 DB_PORT=${DB_PORT:-5432}
@@ -30,14 +31,20 @@ ATLAS_LOGS_ENABLED=${ATLAS_LOGS_ENABLED:-false}
 ATLAS_MONGODB_URI=${ATLAS_MONGODB_URI:-}
 ATLAS_LOGS_DATABASE=${ATLAS_LOGS_DATABASE:-proyecto2026_logs}
 ATLAS_LOGS_COLLECTION=${ATLAS_LOGS_COLLECTION:-logs}
+RUN_MIGRATIONS=${RUN_MIGRATIONS:-false}
 EOF
     elif [ -f /app/.env.docker ]; then
         cp /app/.env.docker /app/.env
     fi
 fi
 
-php artisan key:generate --force
-php artisan migrate --force
+if [ -z "${APP_KEY:-}" ]; then
+    php artisan key:generate --force
+fi
+
+if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
+    php artisan migrate --force
+fi
 php artisan storage:link --force
 
 echo "Backend listo."
