@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ProfesionalController;
 use App\Http\Controllers\Api\ResenaController;
 use App\Http\Controllers\Api\ReservaController;
 use App\Http\Controllers\Api\ServicioController;
+use App\Http\Middleware\RegistrarIntentoLogin;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,7 +27,7 @@ use Illuminate\Support\Facades\Route;
 // ─── Autenticación ─────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
     Route::post('registrar', [AuthController::class, 'registrar']);
-    Route::post('iniciar-sesion', [AuthController::class, 'iniciarSesion']);
+    Route::post('iniciar-sesion', [AuthController::class, 'iniciarSesion'])->middleware(RegistrarIntentoLogin::class);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('cerrar-sesion', [AuthController::class, 'cerrarSesion']);
