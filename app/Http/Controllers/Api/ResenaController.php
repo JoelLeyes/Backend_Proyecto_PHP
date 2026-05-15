@@ -22,13 +22,24 @@ class ResenaController extends Controller
     /**
      * GET /api/profesionales/{profesional}/resenas
      * Lista las reseñas visibles de un profesional, paginadas.
+     * Opcionalmente filtrable por servicio_id.
      */
     public function index(Profesional $profesional): JsonResponse
     {
-        $resenas = Resena::where('profesional_id', $profesional->user_id)
+        $servicio_id = request()->query('servicio_id');
+
+        $query = Resena::where('profesional_id', $profesional->user_id)
             ->where('visible', true)
-            ->with('evaluador:id,name,avatar')
-            ->orderByDesc('created_at')
+            ->with('evaluador:id,name,avatar', 'reserva:id,servicio_id');
+
+        // Si se proporciona servicio_id, filtrar por ese servicio
+        if ($servicio_id) {
+            $query->whereHas('reserva', function ($q) use ($servicio_id) {
+                $q->where('servicio_id', $servicio_id);
+            });
+        }
+
+        $resenas = $query->orderByDesc('created_at')
             ->paginate(10);
 
         return response()->json($resenas);
@@ -58,7 +69,8 @@ class ResenaController extends Controller
             'comentario'   => 'nullable|string|max:1000',
         ]);
 
-        $perfilProfesional = $reserva->profesional?->profesional;
+        // Obtener el perfil profesional del usuario que ofrece el servicio
+        $perfilProfesional = $reserva->profesional?->profesional();
 
         if (!$perfilProfesional) {
             return response()->json(['error' => 'No se encontró el perfil profesional asociado.'], 422);
@@ -85,5 +97,57 @@ class ResenaController extends Controller
         $this->notificaciones->resenaCreada($reserva, $resena);
 
         return response()->json($resena->load(['evaluador', 'profesional', 'reserva']), 201);
+    }
+
+    /**
+     * GET /api/mis-resenas
+     * Lista las reseñas recibidas por el profesional autenticado (ordenadas por más recientes).
+     * Solo accesible por profesionales.
+     */
+    public function resenasPorProfesional(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Verificar que el usuario sea profesional
+        if (!$user || $user->rol !== 'profesional') {
+            return response()->json(['error' => 'No autorizado. Solo los profesionales pueden ver sus reseñas.'], 403);
+        }
+
+        // Obtener todas las reseñas del profesional (paginadas)
+        $resenas = Resena::where('profesional_id', $user->id)
+            ->with([
+                'evaluador:id,name,avatar',
+                'reserva:id,servicio_id,cliente_id,fecha_hora',
+                'reserva.servicio:id,nombre',
+            ])
+            ->orderByDesc('created_at')
+            ->paginate(15);
+
+        // Calcular estadísticas
+        $totalResenas = Resena::where('profesional_id', $user->id)->count();
+        $promedio = Resena::where('profesional_id', $user->id)->avg('calificacion');
+
+        // Contar distribución de calificaciones
+        $distribucion = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $distribucion[$i] = Resena::where('profesional_id', $user->id)
+                ->where('calificacion', $i)
+                ->count();
+        }
+
+        return response()->json([
+            'data' => $resenas->items(),
+            'pagination' => [
+                'current_page' => $resenas->currentPage(),
+                'last_page' => $resenas->lastPage(),
+                'per_page' => $resenas->perPage(),
+                'total' => $resenas->total(),
+            ],
+            'estadisticas' => [
+                'total_resenas' => $totalResenas,
+                'promedio_calificacion' => round($promedio, 2),
+                'distribucion' => $distribucion,
+            ],
+        ]);
     }
 }

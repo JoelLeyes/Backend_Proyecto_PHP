@@ -102,6 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Reseñas (solo el cliente de la reserva puede crearla)
     Route::post('reservas/{reserva}/resena', [ResenaController::class, 'store']);
 
+    // Reseñas recibidas por el profesional
+    Route::get('mis-resenas', [ResenaController::class, 'resenasPorProfesional']);
+
     // Paquetes del cliente
     Route::get('mis-paquetes', [PaqueteController::class, 'misPaquetes']);
     Route::post('paquetes-servicio/{paqueteServicio}/comprar', [PaqueteController::class, 'comprar']);
