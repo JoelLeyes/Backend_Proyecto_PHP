@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Modelo Eloquent para la tabla "servicios".
@@ -59,5 +60,13 @@ class Servicio extends Model
     public function reservas(): HasMany
     {
         return $this->hasMany(Reserva::class, 'servicio_id');
+    }
+
+    /**
+     * Un servicio puede usar muchas ubicaciones.
+     */
+    public function ubicaciones(): BelongsToMany
+    {
+        return $this->belongsToMany(Ubicacion::class, 'servicio_ubicacion', 'servicio_id', 'ubicacion_id');
     }
 }

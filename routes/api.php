@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ProfesionalController;
 use App\Http\Controllers\Api\ResenaController;
 use App\Http\Controllers\Api\ReservaController;
 use App\Http\Controllers\Api\ServicioController;
+use App\Http\Controllers\Api\UbicacionController;
 use App\Http\Middleware\RegistrarIntentoLogin;
 use Illuminate\Support\Facades\Route;
 
@@ -85,6 +86,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('profesionales/{profesional}/servicios', [ServicioController::class, 'store']);
     Route::put('profesionales/{profesional}/servicios/{servicio}', [ServicioController::class, 'update']);
     Route::delete('profesionales/{profesional}/servicios/{servicio}', [ServicioController::class, 'destroy']);
+
+    // Ubicaciones (reutilizables entre servicios)
+    Route::get('ubicaciones', [UbicacionController::class, 'index']);
+    Route::post('ubicaciones', [UbicacionController::class, 'store']);
+    Route::put('ubicaciones/{ubicacion}', [UbicacionController::class, 'update']);
+    Route::delete('ubicaciones/{ubicacion}', [UbicacionController::class, 'destroy']);
+
+    // Asignar ubicaciones a servicios
+    Route::get('servicios/{servicio}/ubicaciones', [UbicacionController::class, 'obtenerServicio']);
+    Route::post('servicios/{servicio}/ubicaciones/{ubicacion}', [UbicacionController::class, 'asignarServicio']);
+    Route::delete('servicios/{servicio}/ubicaciones/{ubicacion}', [UbicacionController::class, 'desasignarServicio']);
 
     // Paquetes de servicio (gestión por el profesional)
     Route::post('profesionales/{profesional}/servicios/{servicio}/paquetes', [PaqueteController::class, 'store']);

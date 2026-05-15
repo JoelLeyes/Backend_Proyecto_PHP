@@ -78,4 +78,12 @@ class Profesional extends Model
     {
         return $this->hasMany(ExcepcionDisponibilidad::class, 'profesional_id');
     }
+
+    /**
+     * Un profesional tiene muchas ubicaciones reutilizables.
+     */
+    public function ubicaciones(): HasMany
+    {
+        return $this->hasMany(Ubicacion::class, 'profesional_id');
+    }
 }
