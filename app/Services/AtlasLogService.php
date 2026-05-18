@@ -24,6 +24,19 @@ class AtlasLogService
         ]);
     }
 
+    public function registrarCreacionUsuario(?string $email, bool $exito, array $contexto = []): void
+    {
+        $this->registrar(
+            'creacion_usuario',
+            $exito ? 'Creación de usuario exitosa' : 'Creación de usuario fallida',
+            $email,
+            $contexto,
+            [
+                'status' => $exito ? 'success' : 'failed',
+            ]
+        );
+    }
+
     private function registrar(string $tipo, string $message, ?string $email, array $contexto, array $extra = []): void
     {
         if (!$this->habilitado()) {

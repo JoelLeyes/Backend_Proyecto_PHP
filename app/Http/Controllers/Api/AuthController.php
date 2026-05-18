@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Profesional;
 use App\Models\User;
+use App\Services\AtlasLogService;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +20,9 @@ use Illuminate\Validation\Rules\Password;
  */
 class AuthController extends Controller
 {
+    public function __construct(private readonly AtlasLogService $atlasLogService)
+    {
+    }
     /**
      * POST /api/auth/registrar
      * Registra un nuevo usuario (cliente o profesional).
@@ -24,32 +30,44 @@ class AuthController extends Controller
      */
     public function registrar(Request $request): JsonResponse
     {
-        $validados = $request->validate([
-            'name'      => 'required|string|max:255',
-            'email'     => 'required|email|unique:users',
-            'password'  => ['required', 'confirmed', Password::min(8)],
-            'rol'       => 'required|in:cliente,profesional',
-            'telefono'  => ['nullable', 'regex:/^\+?[\d\s\-()+]{6,20}$/'],
-        ]);
-
-        $usuario = User::create([
-            'name'     => $validados['name'],
-            'email'    => $validados['email'],
-            'password' => Hash::make($validados['password']),
-            'rol'      => $validados['rol'],
-            'telefono' => $validados['telefono'] ?? null,
-        ]);
-
-        if ($usuario->esProfesional()) {
-            Profesional::create(['user_id' => $usuario->id]);
+        try {
+            $validados = $request->validate([
+                'name'      => 'required|string|max:255',
+                'email'     => 'required|email|unique:users',
+                'password'  => ['required', 'confirmed', Password::min(8)],
+                'rol'       => 'required|in:cliente,profesional',
+                'telefono'  => ['nullable', 'regex:/^\+?[\d\s\-()+]{6,20}$/'],
+            ]);
+        } catch (ValidationException $e) {
+            $this->atlasLogService->registrarCreacionUsuario($request->input('email'), false, ['errors' => $e->errors()]);
+            throw $e;
         }
 
-        $token = $usuario->createToken('token_acceso')->plainTextToken;
+        try {
+            $usuario = User::create([
+                'name'     => $validados['name'],
+                'email'    => $validados['email'],
+                'password' => Hash::make($validados['password']),
+                'rol'      => $validados['rol'],
+                'telefono' => $validados['telefono'] ?? null,
+            ]);
 
-        return response()->json([
-            'usuario' => $usuario->load('profesional'),
-            'token'   => $token,
-        ], 201);
+            if ($usuario->esProfesional()) {
+                Profesional::create(['user_id' => $usuario->id]);
+            }
+
+            $this->atlasLogService->registrarCreacionUsuario($validados['email'], true, ['user_id' => $usuario->id, 'rol' => $usuario->rol]);
+
+            $token = $usuario->createToken('token_acceso')->plainTextToken;
+
+            return response()->json([
+                'usuario' => $usuario->load('profesional'),
+                'token'   => $token,
+            ], 201);
+        } catch (Throwable $e) {
+            $this->atlasLogService->registrarCreacionUsuario($request->input('email'), false, ['exception' => $e->getMessage()]);
+            throw $e;
+        }
     }
 
     /**
