@@ -23,7 +23,7 @@ class ServicioController extends Controller
     {
         $servicios = $profesional->servicios()
             ->where('activo', true)
-            ->with('paquetes')
+            ->with(['paquetes', 'ubicacion'])
             ->get();
 
         return response()->json($servicios);
@@ -56,7 +56,7 @@ class ServicioController extends Controller
      */
     public function show(Profesional $profesional, Servicio $servicio): JsonResponse
     {
-        $servicio->load('paquetes');
+        $servicio->load(['paquetes', 'ubicacion']);
 
         return response()->json($servicio);
     }

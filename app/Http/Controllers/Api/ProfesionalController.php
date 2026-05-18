@@ -52,7 +52,10 @@ class ProfesionalController extends Controller
      */
     public function show(Profesional $profesional): JsonResponse
     {
-        $profesional->load(['usuario', 'servicios' => fn($q) => $q->where('activo', true)]);
+        $profesional->load([
+            'usuario',
+            'servicios' => fn($q) => $q->where('activo', true)->with('ubicacion'),
+        ]);
 
         return response()->json($profesional);
     }

@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * Controlador API para gestión de ubicaciones.
- * Las ubicaciones son reutilizables entre servicios del mismo profesional.
+ * Las ubicaciones se siguen creando por profesional, pero cada servicio
+ * usa una ubicación principal mediante la relación ubicacion_id.
  */
 class UbicacionController extends Controller
 {
@@ -125,7 +126,7 @@ class UbicacionController extends Controller
     {
         $this->authorize('view', $servicio);
 
-        $ubicaciones = $servicio->ubicaciones()->get();
+        $ubicaciones = $servicio->ubicacion ? [$servicio->ubicacion] : [];
         return response()->json($ubicaciones);
     }
 
@@ -142,12 +143,12 @@ class UbicacionController extends Controller
             return response()->json(['error' => 'La ubicación no pertenece a este profesional'], 403);
         }
 
-        // Verificar si ya está asignada
-        if ($servicio->ubicaciones()->where('ubicacion_id', $ubicacion->id)->exists()) {
-            return response()->json(['error' => 'Esta ubicación ya está asignada al servicio'], 409);
+        if ($servicio->ubicacion_id === $ubicacion->id) {
+            return response()->json(['error' => 'Esta ubicación ya es la principal del servicio'], 409);
         }
 
-        $servicio->ubicaciones()->attach($ubicacion);
+        $servicio->ubicacion()->associate($ubicacion);
+        $servicio->save();
 
         return response()->json(['mensaje' => 'Ubicación asignada al servicio'], 201);
     }
@@ -160,7 +161,12 @@ class UbicacionController extends Controller
     {
         $this->authorize('manage', $servicio->profesional);
 
-        $servicio->ubicaciones()->detach($ubicacion);
+        if ($servicio->ubicacion_id !== $ubicacion->id) {
+            return response()->json(['error' => 'La ubicación no está asignada a este servicio'], 404);
+        }
+
+        $servicio->ubicacion()->dissociate();
+        $servicio->save();
 
         return response()->json(['mensaje' => 'Ubicación removida del servicio']);
     }

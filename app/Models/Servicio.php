@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Modelo Eloquent para la tabla "servicios".
@@ -20,6 +19,7 @@ class Servicio extends Model
 
     protected $fillable = [
         'profesional_id',
+        'ubicacion_id',
         'nombre',
         'descripcion',
         'precio',
@@ -63,10 +63,10 @@ class Servicio extends Model
     }
 
     /**
-     * Un servicio puede usar muchas ubicaciones.
+     * Un servicio tiene una ubicación principal.
      */
-    public function ubicaciones(): BelongsToMany
+    public function ubicacion(): BelongsTo
     {
-        return $this->belongsToMany(Ubicacion::class, 'servicio_ubicacion', 'servicio_id', 'ubicacion_id');
+        return $this->belongsTo(Ubicacion::class, 'ubicacion_id');
     }
 }
