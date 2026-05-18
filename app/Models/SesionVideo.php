@@ -26,6 +26,11 @@ class SesionVideo extends Model
         'finalizada_en',
     ];
 
+    protected $hidden = [
+        'token_cliente',
+        'token_profesional',
+    ];
+
     protected function casts(): array
     {
         return [

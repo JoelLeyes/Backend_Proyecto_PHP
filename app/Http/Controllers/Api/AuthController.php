@@ -132,7 +132,7 @@ class AuthController extends Controller
             'name'                 => 'sometimes|string|max:255',
             'telefono'             => ['nullable', 'regex:/^\+?[\d\s\-()+]{6,20}$/'],
             'notificaciones_email' => 'sometimes|boolean',
-            'avatar'               => 'nullable|image|max:2048',
+            'avatar'               => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
         ]);
 
         if ($request->hasFile('avatar')) {
