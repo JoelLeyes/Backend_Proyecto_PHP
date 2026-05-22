@@ -27,7 +27,7 @@
                             <table cellpadding="0" cellspacing="0" style="margin:24px 0 0;">
                                 <tr>
                                     <td style="background:#2563eb;border-radius:10px;">
-                                        <a href="{{ config('app.url') }}" style="display:inline-block;padding:12px 18px;color:#fff;text-decoration:none;font-weight:700;">Ir a la plataforma</a>
+                                        <a href="{{ config('app.frontend_url') }}" style="display:inline-block;padding:12px 18px;color:#fff;text-decoration:none;font-weight:700;">Ir a la plataforma</a>
                                     </td>
                                 </tr>
                             </table>

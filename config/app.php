@@ -57,6 +57,18 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Frontend URL
+    |--------------------------------------------------------------------------
+    |
+    | URL base de la aplicación cliente (front-end). Se puede configurar
+    | con la variable de entorno `FRONTEND_URL`. Si no está presente,
+    | se usará `APP_URL` como fallback.
+    |
+    */
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost')),
+
     'asset_url' => env('ASSET_URL'),
 
     /*
