@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 
 /**
@@ -60,7 +61,12 @@ class AuthController extends Controller
 
             try {
                 Mail::to($usuario->email)->send(new WelcomeMail($usuario));
+                \Log::info('Welcome email sent to ' . $usuario->email);
             } catch (Throwable $mailException) {
+                \Log::error('Welcome email failed for ' . $usuario->email . ': ' . $mailException->getMessage(), [
+                    'exception' => get_class($mailException),
+                    'trace' => $mailException->getTraceAsString(),
+                ]);
                 $this->atlasLogService->registrarError($mailException, [
                     'route' => 'api/auth/registrar',
                     'user_email' => $usuario->email,
