@@ -56,6 +56,14 @@ fi
 if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
     php artisan migrate --force
 fi
+
+# Ensure Laravel writable paths exist before serving requests.
+mkdir -p /app/storage/logs
+mkdir -p /app/storage/framework/cache
+mkdir -p /app/storage/framework/sessions
+mkdir -p /app/storage/framework/views
+touch /app/storage/logs/laravel.log
+
 php artisan storage:link --force
 
 echo "Backend listo."

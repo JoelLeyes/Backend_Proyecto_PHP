@@ -61,9 +61,9 @@ class AuthController extends Controller
 
             try {
                 Mail::to($usuario->email)->send(new WelcomeMail($usuario));
-                \Log::info('Welcome email sent to ' . $usuario->email);
+                Log::info('Welcome email sent to ' . $usuario->email);
             } catch (Throwable $mailException) {
-                \Log::error('Welcome email failed for ' . $usuario->email . ': ' . $mailException->getMessage(), [
+                Log::error('Welcome email failed for ' . $usuario->email . ': ' . $mailException->getMessage(), [
                     'exception' => get_class($mailException),
                     'trace' => $mailException->getTraceAsString(),
                 ]);
