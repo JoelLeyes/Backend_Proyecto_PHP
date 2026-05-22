@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Mail\WelcomeMail;
 use App\Http\Controllers\Controller;
 use App\Models\Profesional;
 use App\Models\User;
@@ -10,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Throwable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
@@ -54,6 +56,16 @@ class AuthController extends Controller
 
             if ($usuario->esProfesional()) {
                 Profesional::create(['user_id' => $usuario->id]);
+            }
+
+            try {
+                Mail::to($usuario->email)->send(new WelcomeMail($usuario));
+            } catch (Throwable $mailException) {
+                $this->atlasLogService->registrarError($mailException, [
+                    'route' => 'api/auth/registrar',
+                    'user_email' => $usuario->email,
+                    'mail_action' => 'welcome_email',
+                ]);
             }
 
             $this->atlasLogService->registrarCreacionUsuario($validados['email'], true, ['user_id' => $usuario->id, 'rol' => $usuario->rol]);
