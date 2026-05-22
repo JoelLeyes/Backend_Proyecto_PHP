@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ResenaController;
 use App\Http\Controllers\Api\ReservaController;
 use App\Http\Controllers\Api\ServicioController;
 use App\Http\Controllers\Api\UbicacionController;
+use App\Http\Controllers\Api\VideoController;
 use App\Http\Middleware\RegistrarIntentoLogin;
 use Illuminate\Support\Facades\Route;
 
@@ -113,6 +114,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Reseñas (solo el cliente de la reserva puede crearla)
     Route::post('reservas/{reserva}/resena', [ResenaController::class, 'store']);
+
+    // Videollamada LiveKit (solo reservas remotas confirmadas/pagadas)
+    Route::get('reservas/{reserva}/video-token', [VideoController::class, 'token']);
 
     // Reseñas recibidas por el profesional
     Route::get('mis-resenas', [ResenaController::class, 'resenasPorProfesional']);
