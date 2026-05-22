@@ -23,6 +23,39 @@ class NotificacionService
     }
 
     /**
+     * Avisa al cliente que la solicitud de reserva fue recibida.
+     */
+    public function reservaSolicitadaCliente(Reserva $reserva): void
+    {
+        $cliente = $reserva->cliente;
+        if (!$this->puedeNotificar($cliente)) return;
+
+        $this->enviar('reserva_solicitada_cliente', $cliente->email, $cliente->name, [
+            'nombre_servicio'    => $reserva->servicio->nombre,
+            'fecha_hora'         => $this->formatear($reserva->fecha_hora),
+            'nombre_profesional' => $reserva->profesional->name,
+            'modalidad'          => $reserva->modalidad,
+        ]);
+    }
+
+    /**
+     * Avisa al profesional que tiene una nueva solicitud pendiente para confirmar.
+     */
+    public function reservaSolicitadaProfesional(Reserva $reserva): void
+    {
+        $profesional = $reserva->profesional;
+        if (!$this->puedeNotificar($profesional)) return;
+
+        $this->enviar('reserva_solicitada_profesional', $profesional->email, $profesional->name, [
+            'nombre_servicio'    => $reserva->servicio->nombre,
+            'fecha_hora'         => $this->formatear($reserva->fecha_hora),
+            'nombre_cliente'     => $reserva->cliente->name,
+            'modalidad'          => $reserva->modalidad,
+            'notas'              => $reserva->notas,
+        ]);
+    }
+
+    /**
      * Avisa al cliente que el profesional confirmó su reserva.
      */
     public function reservaConfirmada(Reserva $reserva): void

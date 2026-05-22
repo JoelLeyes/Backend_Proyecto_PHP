@@ -126,6 +126,10 @@ class ReservaController extends Controller
             }
         }
 
+        $reserva->load(['servicio.profesional', 'cliente', 'profesional']);
+        $this->notificaciones->reservaSolicitadaCliente($reserva);
+        $this->notificaciones->reservaSolicitadaProfesional($reserva);
+
         return response()->json($reserva->load(['servicio', 'cliente', 'profesional']), 201);
     }
 
