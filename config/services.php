@@ -49,6 +49,26 @@ return [
         'mode'      => env('PAYPAL_MODE', 'sandbox'),
     ],
 
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost:5173')),
+
+    'google' => [
+        'client_id'     => env('GOOGLE_CLIENT_ID', ''),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET', ''),
+        'redirect'      => env('GOOGLE_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost:8000'), '/').'/auth/google/callback'),
+    ],
+
+    'github' => [
+        'client_id'     => env('GITHUB_CLIENT_ID', ''),
+        'client_secret' => env('GITHUB_CLIENT_SECRET', ''),
+        'redirect'      => env('GITHUB_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost:8000'), '/').'/auth/github/callback'),
+    ],
+
+    'facebook' => [
+        'client_id'     => env('FACEBOOK_CLIENT_ID', ''),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET', ''),
+        'redirect'      => env('FACEBOOK_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost:8000'), '/').'/auth/facebook/callback'),
+    ],
+
     'livekit' => [
         'url'    => env('LIVEKIT_URL', ''),
         'key'    => env('LIVEKIT_API_KEY', ''),

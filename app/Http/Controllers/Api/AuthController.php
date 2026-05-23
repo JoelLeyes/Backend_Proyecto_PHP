@@ -7,14 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Models\Profesional;
 use App\Models\User;
 use App\Services\AtlasLogService;
-use Illuminate\Validation\ValidationException;
-use Throwable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Socialite\Facades\Socialite;
+use Throwable;
 
 /**
  * Controlador de autenticación.
@@ -23,9 +25,24 @@ use Illuminate\Validation\Rules\Password;
  */
 class AuthController extends Controller
 {
+    private const PROVEEDORES_OAUTH = ['google', 'github', 'facebook'];
+
     public function __construct(private readonly AtlasLogService $atlasLogService)
     {
     }
+
+    private function proveedorOAuthValido(string $proveedor): bool
+    {
+        return in_array($proveedor, self::PROVEEDORES_OAUTH, true);
+    }
+
+    private function redirigirAFrontend(array $parametros = []): RedirectResponse
+    {
+        $frontendUrl = rtrim(config('services.frontend_url', config('app.url')), '/');
+
+        return redirect()->away($frontendUrl . '/auth/iniciar-sesion?' . http_build_query($parametros));
+    }
+
     /**
      * POST /api/auth/registrar
      * Registra un nuevo usuario (cliente o profesional).
@@ -165,6 +182,83 @@ class AuthController extends Controller
         return response()->json([
             'usuario' => $usuario->fresh()->load('profesional'),
             'mensaje' => 'Perfil actualizado correctamente.',
+        ]);
+    }
+
+    /**
+     * GET /auth/{provider}/redirect
+     * Inicia el flujo OAuth con el proveedor configurado.
+     */
+    public function redirigirOAuth(string $provider)
+    {
+        abort_unless($this->proveedorOAuthValido($provider), 404);
+
+        return Socialite::driver($provider)->scopes(['email'])->redirect();
+    }
+
+    /**
+     * GET /auth/{provider}/callback
+     * Completa el login social, crea o enlaza el usuario y devuelve un token Sanctum.
+     */
+    public function manejarCallbackOAuth(string $provider)
+    {
+        if (!$this->proveedorOAuthValido($provider)) {
+            return $this->redirigirAFrontend(['oauth_error' => 'Proveedor OAuth no soportado.']);
+        }
+
+        try {
+            $socialUsuario = Socialite::driver($provider)->scopes(['email'])->user();
+        } catch (Throwable $e) {
+            $this->atlasLogService->registrarError($e, [
+                'route' => "auth/{$provider}/callback",
+                'provider' => $provider,
+            ]);
+
+            return $this->redirigirAFrontend(['oauth_error' => 'No se pudo completar el inicio de sesión social.']);
+        }
+
+        $email = $socialUsuario->getEmail();
+
+        if (!$email) {
+            return $this->redirigirAFrontend(['oauth_error' => 'El proveedor no devolvió un email válido.']);
+        }
+
+        $usuario = User::query()->where('email', $email)->first();
+
+        if ($usuario && !$usuario->activo) {
+            return $this->redirigirAFrontend(['oauth_error' => 'Tu cuenta está desactivada. Contactá al administrador.']);
+        }
+
+        if (!$usuario) {
+            $usuario = User::create([
+                'name'               => $socialUsuario->getName() ?: $socialUsuario->getNickname() ?: 'Usuario OAuth',
+                'email'              => $email,
+                'password'           => Hash::make(str()->random(40)),
+                'rol'                => 'cliente',
+                'avatar'             => $socialUsuario->getAvatar(),
+                'activo'             => true,
+                'email_verified_at' => now(),
+            ]);
+        } else {
+            $actualizacion = [];
+
+            if (!$usuario->avatar && $socialUsuario->getAvatar()) {
+                $actualizacion['avatar'] = $socialUsuario->getAvatar();
+            }
+
+            if (!$usuario->name && $socialUsuario->getName()) {
+                $actualizacion['name'] = $socialUsuario->getName();
+            }
+
+            if (!empty($actualizacion)) {
+                $usuario->update($actualizacion);
+            }
+        }
+
+        $token = $usuario->createToken('oauth_' . $provider)->plainTextToken;
+
+        return $this->redirigirAFrontend([
+            'oauth_token' => $token,
         ]);
     }
 }
