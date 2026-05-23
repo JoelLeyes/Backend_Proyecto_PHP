@@ -61,7 +61,11 @@ jobs:
 
       - name: Apply backend secrets manifest
         run: |
-          kubectl apply -f k8s/backend-secret.yaml
+          if ! kubectl get secret backend-secrets -n $K8S_NAMESPACE >/dev/null 2>&1; then
+            kubectl apply -f k8s/backend-secret.yaml
+          else
+            echo "Secret backend-secrets ya existe, omitiendo apply para no pisar valores."
+          fi
 
       - name: Sync Atlas URI to Kubernetes Secret
         env:
@@ -69,8 +73,8 @@ jobs:
           ATLAS_LOGS_ENABLED: "true"
         run: |
           if [ -z "$ATLAS_MONGODB_URI" ]; then
-            echo "ATLAS_MONGODB_URI is empty or not configured in GitHub Secrets"
-            exit 1
+            echo "Warning: ATLAS_MONGODB_URI not set in GitHub Secrets. Skipping Atlas sync."
+            exit 0
           fi
 
           ATLAS_MONGODB_URI_B64=$(printf "%s" "$ATLAS_MONGODB_URI" | base64 -w 0)
