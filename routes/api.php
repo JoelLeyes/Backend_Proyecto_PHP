@@ -39,6 +39,13 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+// Runtime configuration endpoint: serve small JS with runtime config (maps key).
+Route::get('config.js', function () {
+    $key = env('GOOGLE_MAPS_API_KEY', '');
+    $js = 'window.__APP_CONFIG = { MAPS_KEY: ' . json_encode($key) . ' };';
+    return response($js, 200)->header('Content-Type', 'application/javascript');
+});
+
 // ─── Profesionales (público) ────────────────────────────────────────────────
 //
 // GET /api/profesionales             -> lista con filtros
