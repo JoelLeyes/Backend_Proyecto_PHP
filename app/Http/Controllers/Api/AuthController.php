@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 
@@ -193,7 +194,7 @@ class AuthController extends Controller
     {
         abort_unless($this->proveedorOAuthValido($provider), 404);
 
-        return Socialite::driver($provider)->scopes(['email'])->redirect();
+        return Socialite::driver($provider)->redirect();
     }
 
     /**
@@ -202,63 +203,85 @@ class AuthController extends Controller
      */
     public function manejarCallbackOAuth(string $provider)
     {
+        $oauthError = null;
+        $socialUsuario = null;
+        $usuario = null;
+
         if (!$this->proveedorOAuthValido($provider)) {
-            return $this->redirigirAFrontend(['oauth_error' => 'Proveedor OAuth no soportado.']);
+            $oauthError = 'Proveedor OAuth no soportado.';
         }
 
-        try {
-            $socialUsuario = Socialite::driver($provider)->scopes(['email'])->user();
-        } catch (Throwable $e) {
-            $this->atlasLogService->registrarError($e, [
-                'route' => "auth/{$provider}/callback",
-                'provider' => $provider,
+        if (!$oauthError) {
+            try {
+                $socialUsuario = Socialite::driver($provider)->user();
+            } catch (Throwable $e) {
+                $this->atlasLogService->registrarError($e, [
+                    'route' => "auth/{$provider}/callback",
+                    'provider' => $provider,
+                ]);
+
+                $oauthError = 'No se pudo completar el inicio de sesión social.';
+            }
+        }
+
+        if (!$oauthError && $socialUsuario instanceof SocialiteUser) {
+            [$usuario, $oauthError] = $this->resolverUsuarioOAuth($socialUsuario);
+        }
+
+        if ($oauthError || !$usuario) {
+            return $this->redirigirAFrontend(['oauth_error' => $oauthError ?? 'No se pudo completar el inicio de sesión social.']);
+        }
+
+        return $this->redirigirAFrontend([
+            'oauth_token' => $usuario->createToken('oauth_' . $provider)->plainTextToken,
+        ]);
+    }
+
+    private function sincronizarUsuarioOAuth(?User $usuario, SocialiteUser $socialUsuario, string $email): User
+    {
+        if (!$usuario) {
+            return User::create([
+                'name'              => $socialUsuario->getName() ?: $socialUsuario->getNickname() ?: 'Usuario OAuth',
+                'email'             => $email,
+                'password'          => Hash::make(str()->random(40)),
+                'rol'               => 'cliente',
+                'avatar'            => $socialUsuario->getAvatar(),
+                'activo'            => true,
+                'email_verified_at' => now(),
             ]);
-
-            return $this->redirigirAFrontend(['oauth_error' => 'No se pudo completar el inicio de sesión social.']);
         }
 
+        $actualizacion = [];
+
+        if (!$usuario->avatar && $socialUsuario->getAvatar()) {
+            $actualizacion['avatar'] = $socialUsuario->getAvatar();
+        }
+
+        if (!$usuario->name && $socialUsuario->getName()) {
+            $actualizacion['name'] = $socialUsuario->getName();
+        }
+
+        if (!empty($actualizacion)) {
+            $usuario->update($actualizacion);
+        }
+
+        return $usuario;
+    }
+
+    private function resolverUsuarioOAuth(SocialiteUser $socialUsuario): array
+    {
         $email = $socialUsuario->getEmail();
 
         if (!$email) {
-            return $this->redirigirAFrontend(['oauth_error' => 'El proveedor no devolvió un email válido.']);
+            return [null, 'El proveedor no devolvió un email válido.'];
         }
 
         $usuario = User::query()->where('email', $email)->first();
 
         if ($usuario && !$usuario->activo) {
-            return $this->redirigirAFrontend(['oauth_error' => 'Tu cuenta está desactivada. Contactá al administrador.']);
+            return [null, 'Tu cuenta está desactivada. Contactá al administrador.'];
         }
 
-        if (!$usuario) {
-            $usuario = User::create([
-                'name'               => $socialUsuario->getName() ?: $socialUsuario->getNickname() ?: 'Usuario OAuth',
-                'email'              => $email,
-                'password'           => Hash::make(str()->random(40)),
-                'rol'                => 'cliente',
-                'avatar'             => $socialUsuario->getAvatar(),
-                'activo'             => true,
-                'email_verified_at' => now(),
-            ]);
-        } else {
-            $actualizacion = [];
-
-            if (!$usuario->avatar && $socialUsuario->getAvatar()) {
-                $actualizacion['avatar'] = $socialUsuario->getAvatar();
-            }
-
-            if (!$usuario->name && $socialUsuario->getName()) {
-                $actualizacion['name'] = $socialUsuario->getName();
-            }
-
-            if (!empty($actualizacion)) {
-                $usuario->update($actualizacion);
-            }
-        }
-
-        $token = $usuario->createToken('oauth_' . $provider)->plainTextToken;
-
-        return $this->redirigirAFrontend([
-            'oauth_token' => $token,
-        ]);
+        return [$this->sincronizarUsuarioOAuth($usuario, $socialUsuario, $email), null];
     }
 }
