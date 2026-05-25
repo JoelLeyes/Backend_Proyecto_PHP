@@ -64,6 +64,11 @@ class AuthRegressionTest extends TestCase
     {
         $email = 'oauth+' . Str::random(8) . '@example.com';
 
+        config([
+            'services.google.client_id' => 'google-client-id-test',
+            'services.google.client_secret' => 'google-client-secret-test',
+        ]);
+
         $provider = Mockery::mock(SocialiteProvider::class);
         $factory = Mockery::mock(SocialiteFactory::class);
         $socialUser = Mockery::mock(SocialiteUser::class);
@@ -92,6 +97,14 @@ class AuthRegressionTest extends TestCase
             'email' => $email,
             'name' => 'Usuario OAuth',
         ]);
+    }
+
+    public function test_oauth_callback_redirects_with_error_when_provider_is_not_configured(): void
+    {
+        $response = $this->get('/api/auth/google/redirect');
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('/auth/iniciar-sesion?oauth_error=', $response->headers->get('Location'));
     }
 
     public function test_oauth_callback_redirects_with_error_for_invalid_provider(): void

@@ -39,6 +39,16 @@ class AuthController extends Controller
         return in_array($proveedor, self::PROVEEDORES_OAUTH, true);
     }
 
+    private function proveedorOAuthConfigurado(string $proveedor): bool
+    {
+        return match ($proveedor) {
+            'google' => (bool) config('services.google.client_id') && (bool) config('services.google.client_secret'),
+            'github' => (bool) config('services.github.client_id') && (bool) config('services.github.client_secret'),
+            'facebook' => (bool) config('services.facebook.client_id') && (bool) config('services.facebook.client_secret'),
+            default => false,
+        };
+    }
+
     private function redirigirAFrontend(array $parametros = []): RedirectResponse
     {
         $frontendUrl = rtrim(config('services.frontend_url', config('app.url')), '/');
@@ -197,6 +207,12 @@ class AuthController extends Controller
     public function redirigirOAuth(string $provider)
     {
         abort_unless($this->proveedorOAuthValido($provider), 404);
+
+        if (!$this->proveedorOAuthConfigurado($provider)) {
+            return $this->redirigirAFrontend([
+                'oauth_error' => 'El inicio de sesión con ' . ucfirst($provider) . ' no está configurado en el servidor.',
+            ]);
+        }
 
         return Socialite::driver($provider)->stateless()->redirect();
     }
