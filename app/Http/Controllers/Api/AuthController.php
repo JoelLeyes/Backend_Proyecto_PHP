@@ -194,7 +194,7 @@ class AuthController extends Controller
     {
         abort_unless($this->proveedorOAuthValido($provider), 404);
 
-        return Socialite::driver($provider)->redirect();
+        return Socialite::driver($provider)->stateless()->redirect();
     }
 
     /**
@@ -213,7 +213,7 @@ class AuthController extends Controller
 
         if (!$oauthError) {
             try {
-                $socialUsuario = Socialite::driver($provider)->user();
+                $socialUsuario = Socialite::driver($provider)->stateless()->user();
             } catch (Throwable $e) {
                 $this->atlasLogService->registrarError($e, [
                     'route' => "auth/{$provider}/callback",

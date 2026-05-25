@@ -27,6 +27,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ─── Autenticación ─────────────────────────────────────────────────────────
+Route::get('auth/{provider}/redirect', [AuthController::class, 'redirigirOAuth']);
+Route::get('auth/{provider}/callback', [AuthController::class, 'manejarCallbackOAuth']);
+
 Route::prefix('auth')->group(function () {
     Route::post('registrar', [AuthController::class, 'registrar']);
     Route::post('iniciar-sesion', [AuthController::class, 'iniciarSesion'])->middleware(RegistrarIntentoLogin::class);
