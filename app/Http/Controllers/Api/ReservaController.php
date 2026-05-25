@@ -29,7 +29,7 @@ class ReservaController extends Controller
     public function index(Request $request): JsonResponse
     {
         $usuario  = $request->user();
-        $consulta = Reserva::with(['servicio.profesional', 'cliente', 'profesional', 'resena']);
+        $consulta = Reserva::with(['servicio.profesional', 'servicio.ubicacion', 'cliente', 'profesional', 'resena']);
 
         if ($usuario->esCliente()) {
             $consulta->where('cliente_id', $usuario->id);
