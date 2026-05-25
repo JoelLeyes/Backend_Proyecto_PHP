@@ -1,5 +1,7 @@
 <?php
 
+// Archivo de login y autenticación: app/Http/Controllers/Api/AuthController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Mail\WelcomeMail;
