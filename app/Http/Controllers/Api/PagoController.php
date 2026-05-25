@@ -41,19 +41,12 @@ class PagoController extends Controller
             $validados['id']
         );
 
-        // Evitar crear órdenes duplicadas para la misma entidad pendiente
-        $pagoExistente = Pago::where('pagable_type', get_class($entidad))
+        // Las órdenes PayPal expiran a las 3 horas; marcar pagos pendientes viejos como fallidos
+        // para que siempre se genere una orden fresca al reintentar.
+        Pago::where('pagable_type', get_class($entidad))
             ->where('pagable_id', $entidad->id)
             ->where('estado', 'pendiente')
-            ->first();
-
-        if ($pagoExistente) {
-            return response()->json([
-                'paypal_order_id' => $pagoExistente->paypal_order_id,
-                'monto'           => $monto,
-                'pago_id'         => $pagoExistente->id,
-            ]);
-        }
+            ->update(['estado' => 'fallido']);
 
         try {
             $paypalOrderId = $paypal->crearOrden($monto, 'USD', $descripcion);
