@@ -42,12 +42,23 @@ class AuthController extends Controller
 
     private function proveedorOAuthConfigurado(string $proveedor): bool
     {
-        return match ($proveedor) {
+        $configurado = match ($proveedor) {
             'google' => (bool) config('services.google.client_id') && (bool) config('services.google.client_secret'),
             'github' => (bool) config('services.github.client_id') && (bool) config('services.github.client_secret'),
             'facebook' => (bool) config('services.facebook.client_id') && (bool) config('services.facebook.client_secret'),
             default => false,
         };
+
+        if (!$configurado) {
+            Log::warning("OAuth {$proveedor} no configurado", [
+                'client_id' => config("services.{$proveedor}.client_id") ? 'set' : 'empty',
+                'client_secret' => config("services.{$proveedor}.client_secret") ? 'set' : 'empty',
+                'env_client_id' => env("GOOGLE_CLIENT_ID") ? 'set' : 'empty',
+                'env_client_secret' => env("GOOGLE_CLIENT_SECRET") ? 'set' : 'empty',
+            ]);
+        }
+
+        return $configurado;
     }
 
     private function generarStateOAuth(string $provider): string
