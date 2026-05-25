@@ -214,7 +214,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return Socialite::driver($provider)->stateless()->redirect();
+        return Socialite::driver($provider)->redirect();
     }
 
     /**
@@ -233,7 +233,7 @@ class AuthController extends Controller
 
         if (!$oauthError) {
             try {
-                $socialUsuario = Socialite::driver($provider)->stateless()->user();
+                $socialUsuario = Socialite::driver($provider)->user();
             } catch (Throwable $e) {
                 $this->atlasLogService->registrarError($e, [
                     'route' => "auth/{$provider}/callback",
