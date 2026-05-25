@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
 use Laravel\Socialite\Contracts\Provider as SocialiteProvider;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
-use Laravel\Socialite\Facades\Socialite;
 use Mockery;
 use Tests\TestCase;
 
@@ -65,6 +65,7 @@ class AuthRegressionTest extends TestCase
         $email = 'oauth+' . Str::random(8) . '@example.com';
 
         $provider = Mockery::mock(SocialiteProvider::class);
+        $factory = Mockery::mock(SocialiteFactory::class);
         $socialUser = Mockery::mock(SocialiteUser::class);
 
         $socialUser->shouldReceive('getEmail')->andReturn($email);
@@ -75,10 +76,12 @@ class AuthRegressionTest extends TestCase
         $provider->shouldReceive('stateless')->andReturnSelf();
         $provider->shouldReceive('user')->andReturn($socialUser);
 
-        Socialite::shouldReceive('driver')
+        $factory->shouldReceive('driver')
             ->once()
             ->with('google')
             ->andReturn($provider);
+
+        $this->app->instance(SocialiteFactory::class, $factory);
 
         $response = $this->get('/api/auth/google/callback');
 
