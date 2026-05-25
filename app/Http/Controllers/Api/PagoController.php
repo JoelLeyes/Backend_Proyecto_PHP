@@ -90,14 +90,17 @@ class PagoController extends Controller
 
         try {
             $resultado = $paypal->capturarOrden($validados['paypal_order_id']);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
             $pago->update(['estado' => 'fallido']);
-            return response()->json(['error' => 'El pago no pudo procesarse. Intentá nuevamente.'], 502);
+            \Illuminate\Support\Facades\Log::error('PayPal capture error', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'El pago no pudo procesarse: ' . $e->getMessage()], 502);
         }
 
         if (($resultado['status'] ?? '') !== 'COMPLETED') {
             $pago->update(['estado' => 'fallido']);
-            return response()->json(['error' => 'El pago no fue aprobado por PayPal.'], 422);
+            $paypalError = $resultado['details'][0]['issue'] ?? $resultado['status'] ?? 'desconocido';
+            \Illuminate\Support\Facades\Log::error('PayPal capture not completed', ['result' => $resultado]);
+            return response()->json(['error' => "PayPal rechazó el pago: {$paypalError}"], 422);
         }
 
         $captureId = $resultado['purchase_units'][0]['payments']['captures'][0]['id'] ?? null;
