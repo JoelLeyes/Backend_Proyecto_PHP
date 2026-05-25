@@ -59,14 +59,6 @@ jobs:
             kubectl create namespace "$K8S_NAMESPACE"
           fi
 
-      - name: Apply storage PVC
-        run: |
-          kubectl apply -f k8s/backend-storage-pvc.yaml
-
-      - name: Mount storage PVC in deployment
-        run: |
-          kubectl patch deployment backend -n $K8S_NAMESPACE --type=strategic -p '{"spec":{"template":{"spec":{"volumes":[{"name":"backend-storage","persistentVolumeClaim":{"claimName":"backend-storage"}}],"containers":[{"name":"backend","volumeMounts":[{"name":"backend-storage","mountPath":"/app/storage/app/public"}]}]}}}}'  || true
-
       - name: Apply backend secrets manifest
         run: |
           if ! kubectl get secret backend-secrets -n $K8S_NAMESPACE >/dev/null 2>&1; then
@@ -78,7 +70,7 @@ jobs:
       - name: Patch PayPal and LiveKit credentials
         run: |
           kubectl patch secret backend-secrets -n $K8S_NAMESPACE --type=merge \
-            -p '{"stringData":{"PAYPAL_CLIENT_ID":"AVp0GjORfuI3WCSagsDIJOSeSVN6vRaAoIPVNgV81WDhCfGuDDdNpvsLErD3B2QcZ4RFg5FsG4cv3OtM","PAYPAL_SECRET":"EBT861N51oybFlavu70RA3ujp2-C4taz56xgkVMBSn8SD2hLsiGJf4p8_NST0KXXVWlFIFgXbx7boC15","PAYPAL_MODE":"sandbox","LIVEKIT_URL":"wss://servipro-fztgxuz6.livekit.cloud","LIVEKIT_API_KEY":"APIRX9NnvAfiDUL","LIVEKIT_API_SECRET":"VXbcPaXi1Re0PeuefCeY4OHPB7hc2bcZRMvuSmIJCyfE","SANCTUM_STATEFUL_DOMAINS":"app.agendaonline.cloud-ip.cc","FRONTEND_URL":"https://app.agendaonline.cloud-ip.cc"}}'
+            -p '{"stringData":{"PAYPAL_CLIENT_ID":"AVp0GjORfuI3WCSagsDIJOSeSVN6vRaAoIPVNgV81WDhCfGuDDdNpvsLErD3B2QcZ4RFg5FsG4cv3OtM","PAYPAL_SECRET":"EBT861N51oybFlavu70RA3ujp2-C4taz56xgkVMBSn8SD2hLsiGJf4p8_NST0KXXVWlFIFgXbx7boC15","PAYPAL_MODE":"sandbox","LIVEKIT_URL":"wss://servipro-fztgxuz6.livekit.cloud","LIVEKIT_API_KEY":"APIRX9NnvAfiDUL","LIVEKIT_API_SECRET":"VXbcPaXi1Re0PeuefCeY4OHPB7hc2bcZRMvuSmIJCyfE","SANCTUM_STATEFUL_DOMAINS":"app.agendaonline.cloud-ip.cc","FRONTEND_URL":"https://app.agendaonline.cloud-ip.cc","RUN_MIGRATIONS":"true"}}'
 
       - name: Sync Atlas URI to Kubernetes Secret
         env:

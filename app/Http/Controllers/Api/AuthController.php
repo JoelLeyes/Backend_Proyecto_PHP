@@ -172,8 +172,10 @@ class AuthController extends Controller
         ]);
 
         if ($request->hasFile('avatar')) {
-            $ruta = $request->file('avatar')->store('avatars', 'public');
-            $validados['avatar'] = asset('storage/' . $ruta);
+            $archivo = $request->file('avatar');
+            $mime    = $archivo->getMimeType();
+            $base64  = base64_encode(file_get_contents($archivo->getRealPath()));
+            $validados['avatar'] = "data:{$mime};base64,{$base64}";
         } else {
             unset($validados['avatar']);
         }
