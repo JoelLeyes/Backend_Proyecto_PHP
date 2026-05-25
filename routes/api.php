@@ -112,6 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('reservas', [ReservaController::class, 'store']);
     Route::get('reservas/{reserva}', [ReservaController::class, 'show']);
     Route::post('reservas/{reserva}/confirmar', [ReservaController::class, 'confirmar']);
+    Route::post('reservas/{reserva}/finalizar', [ReservaController::class, 'finalizar']);
     Route::post('reservas/{reserva}/cancelar', [ReservaController::class, 'cancelar']);
     Route::patch('reservas/{reserva}/reprogramar', [ReservaController::class, 'reprogramar']);
 

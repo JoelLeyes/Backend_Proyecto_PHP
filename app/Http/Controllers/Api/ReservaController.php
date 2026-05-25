@@ -219,6 +219,23 @@ class ReservaController extends Controller
     }
 
     /**
+     * POST /api/reservas/{reserva}/finalizar
+     * El profesional marca manualmente una reserva como finalizada.
+     */
+    public function finalizar(Reserva $reserva): JsonResponse
+    {
+        $this->authorize('manage', $reserva);
+
+        if (!in_array($reserva->estado, ['confirmada', 'pagada', 'en_curso'])) {
+            return response()->json(['error' => 'Solo se pueden finalizar reservas confirmadas, pagadas o en curso.'], 422);
+        }
+
+        $reserva->update(['estado' => 'finalizada']);
+
+        return response()->json($reserva->load(['servicio', 'cliente', 'profesional']));
+    }
+
+    /**
      * PATCH /api/reservas/{reserva}/reprogramar
      * Reprograma una reserva a una nueva fecha y hora.
      */

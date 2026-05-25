@@ -19,7 +19,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -29,7 +28,7 @@ use Throwable;
  */
 class AuthController extends Controller
 {
-    private const PROVEEDORES_OAUTH = ['google', 'github', 'facebook'];
+    private const PROVEEDORES_OAUTH = ['google'];
 
     public function __construct(private readonly AtlasLogService $atlasLogService)
     {
@@ -42,43 +41,7 @@ class AuthController extends Controller
 
     private function proveedorOAuthConfigurado(string $proveedor): bool
     {
-        $configurado = match ($proveedor) {
-            'google' => (bool) config('services.google.client_id') && (bool) config('services.google.client_secret'),
-            'github' => (bool) config('services.github.client_id') && (bool) config('services.github.client_secret'),
-            'facebook' => (bool) config('services.facebook.client_id') && (bool) config('services.facebook.client_secret'),
-            default => false,
-        };
-
-        if (!$configurado) {
-            Log::warning("OAuth {$proveedor} no configurado", [
-                'client_id' => config("services.{$proveedor}.client_id") ? 'set' : 'empty',
-                'client_secret' => config("services.{$proveedor}.client_secret") ? 'set' : 'empty',
-                'env_client_id' => env("GOOGLE_CLIENT_ID") ? 'set' : 'empty',
-                'env_client_secret' => env("GOOGLE_CLIENT_SECRET") ? 'set' : 'empty',
-            ]);
-        }
-
-        return $configurado;
-    }
-
-    private function generarStateOAuth(string $provider): string
-    {
-        $state = bin2hex(random_bytes(16));
-        Cache::put("oauth_state_{$state}", [
-            'provider' => $provider,
-            'created_at' => now()->timestamp,
-        ], 3600); // 1 hora
-        return $state;
-    }
-
-    private function validarStateOAuth(string $state): ?array
-    {
-        $data = Cache::get("oauth_state_{$state}");
-        if (!$data) {
-            return null;
-        }
-        Cache::forget("oauth_state_{$state}");
-        return $data;
+        return (bool) config('services.google.client_id') && (bool) config('services.google.client_secret');
     }
 
     private function redirigirAFrontend(array $parametros = []): RedirectResponse
@@ -246,7 +209,7 @@ class AuthController extends Controller
             ]);
         }
 
-        return Socialite::driver($provider)->redirect();
+        return Socialite::driver($provider)->stateless()->redirect();
     }
 
     /**
@@ -265,7 +228,7 @@ class AuthController extends Controller
 
         if (!$oauthError) {
             try {
-                $socialUsuario = Socialite::driver($provider)->user();
+                $socialUsuario = Socialite::driver($provider)->stateless()->user();
             } catch (Throwable $e) {
                 $this->atlasLogService->registrarError($e, [
                     'route' => "auth/{$provider}/callback",

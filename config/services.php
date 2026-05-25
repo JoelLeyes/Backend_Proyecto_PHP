@@ -57,18 +57,6 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost:8000'), '/').'/api/auth/google/callback'),
     ],
 
-    'github' => [
-        'client_id'     => env('GITHUB_CLIENT_ID', ''),
-        'client_secret' => env('GITHUB_CLIENT_SECRET', ''),
-        'redirect'      => env('GITHUB_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost:8000'), '/').'/api/auth/github/callback'),
-    ],
-
-    'facebook' => [
-        'client_id'     => env('FACEBOOK_CLIENT_ID', ''),
-        'client_secret' => env('FACEBOOK_CLIENT_SECRET', ''),
-        'redirect'      => env('FACEBOOK_REDIRECT_URI', rtrim(env('APP_URL', 'http://localhost:8000'), '/').'/api/auth/facebook/callback'),
-    ],
-
     'livekit' => [
         'url'    => env('LIVEKIT_URL', ''),
         'key'    => env('LIVEKIT_API_KEY', ''),

@@ -82,5 +82,8 @@ touch /app/storage/logs/laravel.log
 
 php artisan storage:link --force
 
+# Scheduler en background: finaliza reservas vencidas cada 5 minutos
+php artisan schedule:work &
+
 echo "Backend listo."
 exec "$@"
