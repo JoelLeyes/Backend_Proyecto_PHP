@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Cache;
+use Laravel\Socialite\Two\AbstractProvider;
 use Throwable;
 
 /**
@@ -59,26 +59,6 @@ class AuthController extends Controller
         }
 
         return $configurado;
-    }
-
-    private function generarStateOAuth(string $provider): string
-    {
-        $state = bin2hex(random_bytes(16));
-        Cache::put("oauth_state_{$state}", [
-            'provider' => $provider,
-            'created_at' => now()->timestamp,
-        ], 3600); // 1 hora
-        return $state;
-    }
-
-    private function validarStateOAuth(string $state): ?array
-    {
-        $data = Cache::get("oauth_state_{$state}");
-        if (!$data) {
-            return null;
-        }
-        Cache::forget("oauth_state_{$state}");
-        return $data;
     }
 
     private function redirigirAFrontend(array $parametros = []): RedirectResponse
@@ -246,7 +226,10 @@ class AuthController extends Controller
             ]);
         }
 
-        return Socialite::driver($provider)->redirect();
+        /** @var AbstractProvider $socialiteProvider */
+        $socialiteProvider = Socialite::driver($provider);
+
+        return $socialiteProvider->stateless()->redirect();
     }
 
     /**
@@ -265,7 +248,9 @@ class AuthController extends Controller
 
         if (!$oauthError) {
             try {
-                $socialUsuario = Socialite::driver($provider)->user();
+                /** @var AbstractProvider $socialiteProvider */
+                $socialiteProvider = Socialite::driver($provider);
+                $socialUsuario = $socialiteProvider->stateless()->user();
             } catch (Throwable $e) {
                 $this->atlasLogService->registrarError($e, [
                     'route' => "auth/{$provider}/callback",
