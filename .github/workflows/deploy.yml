@@ -70,7 +70,7 @@ jobs:
       - name: Patch PayPal and LiveKit credentials
         run: |
           kubectl patch secret backend-secrets -n $K8S_NAMESPACE --type=merge \
-            -p '{"stringData":{"PAYPAL_CLIENT_ID":"AVp0GjORfuI3WCSagsDIJOSeSVN6vRaAoIPVNgV81WDhCfGuDDdNpvsLErD3B2QcZ4RFg5FsG4cv3OtM","PAYPAL_SECRET":"EBT861N51oybFlavu70RA3ujp2-C4taz56xgkVMBSn8SD2hLsiGJf4p8_NST0KXXVWlFIFgXbx7boC15","PAYPAL_MODE":"sandbox","LIVEKIT_URL":"wss://servipro-fztgxuz6.livekit.cloud","LIVEKIT_API_KEY":"APIRX9NnvAfiDUL","LIVEKIT_API_SECRET":"VXbcPaXi1Re0PeuefCeY4OHPB7hc2bcZRMvuSmIJCyfE","SANCTUM_STATEFUL_DOMAINS":"app.agendaonline.cloud-ip.cc","FRONTEND_URL":"https://app.agendaonline.cloud-ip.cc","RUN_MIGRATIONS":"true"}}'
+            -p '{"stringData":{"PAYPAL_CLIENT_ID":"AVp0GjORfuI3WCSagsDIJOSeSVN6vRaAoIPVNgV81WDhCfGuDDdNpvsLErD3B2QcZ4RFg5FsG4cv3OtM","PAYPAL_SECRET":"EBT861N51oybFlavu70RA3ujp2-C4taz56xgkVMBSn8SD2hLsiGJf4p8_NST0KXXVWlFIFgXbx7boC15","PAYPAL_MODE":"sandbox","LIVEKIT_URL":"wss://servipro-fztgxuz6.livekit.cloud","LIVEKIT_API_KEY":"APIRX9NnvAfiDUL","LIVEKIT_API_SECRET":"VXbcPaXi1Re0PeuefCeY4OHPB7hc2bcZRMvuSmIJCyfE","GOOGLE_CLIENT_ID":"${{ secrets.GOOGLE_CLIENT_ID }}","GOOGLE_CLIENT_SECRET":"${{ secrets.GOOGLE_CLIENT_SECRET }}","GOOGLE_REDIRECT_URI":"https://api.agendaonline.cloud-ip.cc/api/auth/google/callback","SANCTUM_STATEFUL_DOMAINS":"app.agendaonline.cloud-ip.cc","FRONTEND_URL":"https://app.agendaonline.cloud-ip.cc","RUN_MIGRATIONS":"true"}}'
 
       - name: Sync Atlas URI to Kubernetes Secret
         env:
