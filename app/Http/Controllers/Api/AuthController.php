@@ -19,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -47,6 +48,26 @@ class AuthController extends Controller
             'facebook' => (bool) config('services.facebook.client_id') && (bool) config('services.facebook.client_secret'),
             default => false,
         };
+    }
+
+    private function generarStateOAuth(string $provider): string
+    {
+        $state = bin2hex(random_bytes(16));
+        Cache::put("oauth_state_{$state}", [
+            'provider' => $provider,
+            'created_at' => now()->timestamp,
+        ], 3600); // 1 hora
+        return $state;
+    }
+
+    private function validarStateOAuth(string $state): ?array
+    {
+        $data = Cache::get("oauth_state_{$state}");
+        if (!$data) {
+            return null;
+        }
+        Cache::forget("oauth_state_{$state}");
+        return $data;
     }
 
     private function redirigirAFrontend(array $parametros = []): RedirectResponse
