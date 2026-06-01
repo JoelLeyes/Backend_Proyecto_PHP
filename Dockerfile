@@ -26,6 +26,7 @@ RUN composer install --no-dev --no-scripts --no-autoloader --ignore-platform-req
 
 COPY . .
 RUN composer dump-autoload --optimize \
+    && sed -i 's/\r$//' docker-entrypoint.sh \
     && chmod +x docker-entrypoint.sh
 
 EXPOSE 8000

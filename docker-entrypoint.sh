@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-DB_HOST_VALUE="${DB_HOST:-postgres}"
+DB_HOST_VALUE="${DB_HOST:-database-1.ckzeuqplprxe.us-east-1.rds.amazonaws.com}"
 DB_PORT_VALUE="${DB_PORT:-5432}"
 DB_USERNAME_VALUE="${DB_USERNAME:-postgres}"
 
@@ -20,7 +20,7 @@ APP_URL=${APP_URL:-http://localhost}
 APP_KEY=${APP_KEY:-}
 FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
 DB_CONNECTION=${DB_CONNECTION:-pgsql}
-DB_HOST=${DB_HOST:-database-1.cexnzzrh862s.us-east-1.rds.amazonaws.com}
+DB_HOST=${DB_HOST:-database-1.ckzeuqplprxe.us-east-1.rds.amazonaws.com}
 DB_PORT=${DB_PORT:-5432}
 DB_DATABASE=${DB_DATABASE:-servicios_pro}
 DB_USERNAME=${DB_USERNAME:-postgres}
