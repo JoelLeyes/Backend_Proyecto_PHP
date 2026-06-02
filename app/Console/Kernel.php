@@ -2,13 +2,14 @@
 
 namespace App\Console;
 
+use App\Console\Commands\FinalizarReservasVencidas;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Console\Scheduling\Schedule;
 
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
-        // Register custom Artisan commands here.
+        FinalizarReservasVencidas::class,
     ];
 
     protected function schedule(Schedule $schedule)

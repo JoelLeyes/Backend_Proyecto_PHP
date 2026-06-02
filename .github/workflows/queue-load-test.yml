@@ -1,0 +1,51 @@
+name: queue-load-test
+
+on:
+  workflow_dispatch:
+    inputs:
+      cantidad:
+        description: 'Cantidad de jobs a despachar'
+        required: false
+        default: '200'
+      esperar:
+        description: 'Esperar a que la cola se vacie'
+        required: false
+        default: 'true'
+
+jobs:
+  stress-queues:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      EKS_CLUSTER: proyecto_php_cluster
+      K8S_NAMESPACE: proyecto2026
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.2.1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER
+
+      - name: Wait for backend and queue worker
+        run: |
+          kubectl rollout status deployment/backend -n $K8S_NAMESPACE --timeout=10m
+          kubectl rollout status deployment/queue-worker -n $K8S_NAMESPACE --timeout=10m
+          kubectl wait --for=condition=ready pod -l app=backend -n $K8S_NAMESPACE --timeout=10m
+
+      - name: Run queue stress test inside backend pod
+        run: |
+          BACKEND_POD=$(kubectl get pods -n $K8S_NAMESPACE -l app=backend -o jsonpath='{.items[0].metadata.name}')
+          echo "Using backend pod: $BACKEND_POD"
+          kubectl exec -n $K8S_NAMESPACE "$BACKEND_POD" -- php artisan colas:probar "${{ inputs.cantidad }}" --esperar=${{ inputs.esperar }}
