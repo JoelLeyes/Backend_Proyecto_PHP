@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\Factory as SocialiteFactory;
 use Laravel\Socialite\Contracts\Provider as SocialiteProvider;
@@ -17,87 +20,124 @@ class AuthRegressionTest extends TestCase
     protected function tearDown(): void
     {
         Mockery::close();
-
         parent::tearDown();
     }
 
+    // ── Registro y login con email ────────────────────────────────────────────
+
     public function test_user_can_register_and_login(): void
     {
-        $email = 'user+' . Str::random(8) . '@example.com';
+        $email    = 'user+' . Str::random(8) . '@example.com';
         $password = 'Password123';
 
         $register = $this->postJson('/api/auth/registrar', [
-            'name' => 'Usuario Test',
-            'email' => $email,
-            'password' => $password,
+            'name'                  => 'Usuario Test',
+            'email'                 => $email,
+            'password'              => $password,
             'password_confirmation' => $password,
-            'rol' => 'cliente',
+            'rol'                   => 'cliente',
         ]);
 
         $register
             ->assertStatus(201)
             ->assertJsonPath('usuario.email', $email)
-            ->assertJsonStructure([
-                'usuario' => ['id', 'email'],
-                'token',
-            ]);
+            ->assertJsonStructure(['usuario' => ['id', 'email'], 'token']);
 
-        $this->assertDatabaseHas('users', [
-            'email' => $email,
-        ]);
+        $this->assertDatabaseHas('users', ['email' => $email]);
 
         $login = $this->postJson('/api/auth/iniciar-sesion', [
-            'email' => $email,
+            'email'    => $email,
             'password' => $password,
         ]);
 
         $login
             ->assertOk()
             ->assertJsonPath('usuario.email', $email)
-            ->assertJsonStructure([
-                'usuario' => ['id', 'email'],
-                'token',
-            ]);
+            ->assertJsonStructure(['usuario' => ['id', 'email'], 'token']);
     }
 
-    public function test_oauth_callback_creates_user_and_redirects_with_token(): void
+    // ── OAuth: usuario nuevo → pide elegir rol ────────────────────────────────
+
+    public function test_oauth_callback_redirects_new_user_with_pending_token(): void
     {
         $email = 'oauth+' . Str::random(8) . '@example.com';
 
-        config([
-            'services.google.client_id' => 'google-client-id-test',
-            'services.google.client_secret' => 'google-client-secret-test',
+        $this->mockSocialite('google', $email, 'Usuario OAuth');
+
+        $response = $this->get('/api/auth/google/callback');
+
+        $response->assertRedirect();
+        $location = $response->headers->get('Location');
+
+        $this->assertStringContainsString('/auth/iniciar-sesion?oauth_pending=', $location);
+
+        // El usuario NO debe existir aún en la DB
+        $this->assertDatabaseMissing('users', ['email' => $email]);
+    }
+
+    // ── OAuth: completar registro eligiendo rol ───────────────────────────────
+
+    public function test_oauth_completar_creates_user_with_chosen_rol(): void
+    {
+        $email = 'oauth+' . Str::random(8) . '@example.com';
+
+        $pendingToken = 'test-pending-token-' . Str::random(8);
+        Cache::put("oauth_pending_{$pendingToken}", [
+            'name'   => 'Usuario OAuth',
+            'email'  => $email,
+            'avatar' => 'https://example.com/avatar.png',
+        ], now()->addMinutes(30));
+
+        $response = $this->postJson('/api/auth/oauth/completar', [
+            'pending_token' => $pendingToken,
+            'rol'           => 'profesional',
         ]);
 
-        $provider = Mockery::mock(SocialiteProvider::class);
-        $factory = Mockery::mock(SocialiteFactory::class);
-        $socialUser = Mockery::mock(SocialiteUser::class);
+        $response
+            ->assertStatus(201)
+            ->assertJsonPath('usuario.email', $email)
+            ->assertJsonPath('usuario.rol', 'profesional')
+            ->assertJsonStructure(['usuario' => ['id', 'email', 'rol'], 'token']);
 
-        $socialUser->shouldReceive('getEmail')->andReturn($email);
-        $socialUser->shouldReceive('getName')->andReturn('Usuario OAuth');
-        $socialUser->shouldReceive('getNickname')->andReturnNull();
-        $socialUser->shouldReceive('getAvatar')->andReturn('https://example.com/avatar.png');
+        $this->assertDatabaseHas('users', ['email' => $email, 'rol' => 'profesional']);
 
-        $provider->shouldReceive('stateless')->andReturnSelf();
-        $provider->shouldReceive('user')->andReturn($socialUser);
+        // El token de cache debe haberse consumido
+        $this->assertNull(Cache::get("oauth_pending_{$pendingToken}"));
+    }
 
-        $factory->shouldReceive('driver')
-            ->once()
-            ->with('google')
-            ->andReturn($provider);
+    public function test_oauth_completar_fails_with_expired_token(): void
+    {
+        $response = $this->postJson('/api/auth/oauth/completar', [
+            'pending_token' => 'token-inexistente',
+            'rol'           => 'cliente',
+        ]);
 
-        $this->app->instance(SocialiteFactory::class, $factory);
+        $response->assertStatus(422)->assertJsonPath('error', fn ($v) => str_contains($v, 'expiró'));
+    }
+
+    // ── OAuth: usuario existente → token directo ──────────────────────────────
+
+    public function test_oauth_callback_existing_user_redirects_with_token(): void
+    {
+        $email = 'oauth+' . Str::random(8) . '@example.com';
+
+        User::create([
+            'name'     => 'Usuario Existente',
+            'email'    => $email,
+            'password' => Hash::make('Password123'),
+            'rol'      => 'cliente',
+            'activo'   => true,
+        ]);
+
+        $this->mockSocialite('google', $email, 'Usuario OAuth');
 
         $response = $this->get('/api/auth/google/callback');
 
         $response->assertRedirect();
         $this->assertStringContainsString('/auth/iniciar-sesion?oauth_token=', $response->headers->get('Location'));
-
-        $this->assertDatabaseHas('users', [
-            'email' => $email,
-            'name' => 'Usuario OAuth',
-        ]);
     }
+
+    // ── OAuth: errores de configuración y proveedor ───────────────────────────
 
     public function test_oauth_callback_redirects_with_error_when_provider_is_not_configured(): void
     {
@@ -113,5 +153,30 @@ class AuthRegressionTest extends TestCase
 
         $response->assertRedirect();
         $this->assertStringContainsString('/auth/iniciar-sesion?oauth_error=', $response->headers->get('Location'));
+    }
+
+    // ── Helper ────────────────────────────────────────────────────────────────
+
+    private function mockSocialite(string $driver, string $email, string $name): void
+    {
+        config([
+            'services.google.client_id'     => 'google-client-id-test',
+            'services.google.client_secret' => 'google-client-secret-test',
+        ]);
+
+        $socialUser = Mockery::mock(SocialiteUser::class);
+        $socialUser->shouldReceive('getEmail')->andReturn($email);
+        $socialUser->shouldReceive('getName')->andReturn($name);
+        $socialUser->shouldReceive('getNickname')->andReturnNull();
+        $socialUser->shouldReceive('getAvatar')->andReturn('https://example.com/avatar.png');
+
+        $provider = Mockery::mock(SocialiteProvider::class);
+        $provider->shouldReceive('stateless')->andReturnSelf();
+        $provider->shouldReceive('user')->andReturn($socialUser);
+
+        $factory = Mockery::mock(SocialiteFactory::class);
+        $factory->shouldReceive('driver')->with($driver)->andReturn($provider);
+
+        $this->app->instance(SocialiteFactory::class, $factory);
     }
 }
