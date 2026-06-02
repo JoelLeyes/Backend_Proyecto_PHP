@@ -19,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -240,11 +241,16 @@ class AuthController extends Controller
         }
 
         if (!$oauthError && $socialUsuario instanceof SocialiteUser) {
-            [$usuario, $oauthError] = $this->resolverUsuarioOAuth($socialUsuario);
+            [$usuario, $pendingToken, $oauthError] = $this->resolverUsuarioOAuth($socialUsuario);
         }
 
-        if ($oauthError || !$usuario) {
-            return $this->redirigirAFrontend(['oauth_error' => $oauthError ?? 'No se pudo completar el inicio de sesión social.']);
+        if ($oauthError) {
+            return $this->redirigirAFrontend(['oauth_error' => $oauthError]);
+        }
+
+        // Usuario nuevo: redirigir para que elija su rol antes de crear la cuenta
+        if ($pendingToken ?? null) {
+            return $this->redirigirAFrontend(['oauth_pending' => $pendingToken]);
         }
 
         return $this->redirigirAFrontend([
@@ -252,30 +258,62 @@ class AuthController extends Controller
         ]);
     }
 
-    private function sincronizarUsuarioOAuth(?User $usuario, SocialiteUser $socialUsuario, string $email): User
+    /**
+     * POST /api/auth/oauth/completar
+     * El usuario nuevo de OAuth elige su rol y se crea la cuenta.
+     * Devuelve token Sanctum igual que el registro normal.
+     */
+    public function completarRegistroOAuth(Request $request): JsonResponse
     {
-        if (!$usuario) {
-            return User::create([
-                'name'              => $socialUsuario->getName() ?: $socialUsuario->getNickname() ?: 'Usuario OAuth',
-                'email'             => $email,
-                'password'          => Hash::make(str()->random(40)),
-                'rol'               => 'cliente',
-                'avatar'            => $socialUsuario->getAvatar(),
-                'activo'            => true,
-                'email_verified_at' => now(),
-            ]);
+        $validados = $request->validate([
+            'pending_token' => 'required|string',
+            'rol'           => 'required|in:cliente,profesional',
+        ]);
+
+        $datos = Cache::get("oauth_pending_{$validados['pending_token']}");
+
+        if (!$datos) {
+            return response()->json(['error' => 'El enlace expiró. Iniciá sesión con Google nuevamente.'], 422);
         }
 
+        Cache::forget("oauth_pending_{$validados['pending_token']}");
+
+        if (User::where('email', $datos['email'])->exists()) {
+            return response()->json(['error' => 'Esta cuenta ya fue registrada. Iniciá sesión normalmente.'], 422);
+        }
+
+        $usuario = User::create([
+            'name'              => $datos['name'],
+            'email'             => $datos['email'],
+            'password'          => Hash::make(str()->random(40)),
+            'rol'               => $validados['rol'],
+            'avatar'            => $datos['avatar'],
+            'activo'            => true,
+            'email_verified_at' => now(),
+        ]);
+
+        if ($usuario->esProfesional()) {
+            Profesional::create(['user_id' => $usuario->id]);
+        }
+
+        $token = $usuario->createToken('oauth_google')->plainTextToken;
+
+        return response()->json([
+            'usuario' => $usuario->load('profesional'),
+            'token'   => $token,
+        ], 201);
+    }
+
+    private function sincronizarUsuarioExistenteOAuth(User $usuario, SocialiteUser $socialUsuario): User
+    {
         $actualizacion = [];
 
         if (!$usuario->avatar && $socialUsuario->getAvatar()) {
             $actualizacion['avatar'] = $socialUsuario->getAvatar();
         }
-
         if (!$usuario->name && $socialUsuario->getName()) {
             $actualizacion['name'] = $socialUsuario->getName();
         }
-
         if (!empty($actualizacion)) {
             $usuario->update($actualizacion);
         }
@@ -283,20 +321,34 @@ class AuthController extends Controller
         return $usuario;
     }
 
+    // Retorna [usuario|null, pendingToken|null, error|null]
     private function resolverUsuarioOAuth(SocialiteUser $socialUsuario): array
     {
         $email = $socialUsuario->getEmail();
 
         if (!$email) {
-            return [null, 'El proveedor no devolvió un email válido.'];
+            return [null, null, 'El proveedor no devolvió un email válido.'];
         }
 
         $usuario = User::query()->where('email', $email)->first();
 
         if ($usuario && !$usuario->activo) {
-            return [null, 'Tu cuenta está desactivada. Contactá al administrador.'];
+            return [null, null, 'Tu cuenta está desactivada. Contactá al administrador.'];
         }
 
-        return [$this->sincronizarUsuarioOAuth($usuario, $socialUsuario, $email), null];
+        // Usuario existente: sincronizar y continuar
+        if ($usuario) {
+            return [$this->sincronizarUsuarioExistenteOAuth($usuario, $socialUsuario), null, null];
+        }
+
+        // Usuario nuevo: guardar datos en cache y pedir que elija rol
+        $pendingToken = bin2hex(random_bytes(16));
+        Cache::put("oauth_pending_{$pendingToken}", [
+            'name'   => $socialUsuario->getName() ?: $socialUsuario->getNickname() ?: 'Usuario',
+            'email'  => $email,
+            'avatar' => $socialUsuario->getAvatar(),
+        ], now()->addMinutes(30));
+
+        return [null, $pendingToken, null];
     }
 }

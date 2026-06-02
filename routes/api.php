@@ -33,6 +33,7 @@ Route::get('auth/{provider}/callback', [AuthController::class, 'manejarCallbackO
 Route::prefix('auth')->group(function () {
     Route::post('registrar', [AuthController::class, 'registrar']);
     Route::post('iniciar-sesion', [AuthController::class, 'iniciarSesion'])->middleware(RegistrarIntentoLogin::class);
+    Route::post('oauth/completar', [AuthController::class, 'completarRegistroOAuth']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('cerrar-sesion', [AuthController::class, 'cerrarSesion']);
