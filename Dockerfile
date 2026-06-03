@@ -22,7 +22,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 COPY composer.json composer.lock* ./
-RUN composer install --no-dev --no-scripts --no-autoloader --ignore-platform-reqs
+RUN composer update --no-dev --no-scripts --no-autoloader --ignore-platform-reqs
 
 COPY . .
 RUN composer dump-autoload --optimize \
