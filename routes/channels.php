@@ -17,8 +17,8 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
-// Canal privado para notificaciones de un usuario específico
-Broadcast::channel('reservations.{userId}', function ($user, $userId) {
+// Canal privado por usuario: recibe actualizaciones de sus reservas
+Broadcast::channel('reservas.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
 
