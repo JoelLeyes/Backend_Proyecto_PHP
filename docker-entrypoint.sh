@@ -54,6 +54,13 @@ PAYPAL_MODE=${PAYPAL_MODE:-sandbox}
 LIVEKIT_URL=${LIVEKIT_URL:-}
 LIVEKIT_API_KEY=${LIVEKIT_API_KEY:-}
 LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET:-}
+BROADCAST_DRIVER=reverb
+REVERB_APP_ID=${REVERB_APP_ID:-1}
+REVERB_APP_KEY=${REVERB_APP_KEY:-}
+REVERB_APP_SECRET=${REVERB_APP_SECRET:-}
+REVERB_HOST=0.0.0.0
+REVERB_PORT=${REVERB_PORT:-8080}
+REVERB_SCHEME=${REVERB_SCHEME:-https}
 ATLAS_LOGS_ENABLED=${ATLAS_LOGS_ENABLED:-false}
 ATLAS_MONGODB_URI=${ATLAS_MONGODB_URI:-}
 ATLAS_LOGS_DATABASE=${ATLAS_LOGS_DATABASE:-proyecto2026_logs}
@@ -84,6 +91,9 @@ php artisan storage:link --force
 
 # Scheduler en background: finaliza reservas vencidas cada 5 minutos
 php artisan schedule:work &
+
+# Reverb WebSocket server en background
+php artisan reverb:start --host=0.0.0.0 --port=${REVERB_PORT:-8080} --no-interaction &
 
 echo "Backend listo."
 exec "$@"
