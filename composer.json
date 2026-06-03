@@ -9,6 +9,7 @@
     "laravel/framework": "^10.0",
     "laravel/sanctum": "^3.4",
     "laravel/socialite": "^5.20",
+    "laravel/reverb": "^0.1",
     "guzzlehttp/guzzle": "^7.0",
     "mongodb/mongodb": "^1.21",
     "symfony/css-selector": "^6.4"

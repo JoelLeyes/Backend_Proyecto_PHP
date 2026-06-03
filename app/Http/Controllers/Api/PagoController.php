@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\PaymentReceived;
 use App\Http\Controllers\Controller;
 use App\Models\Pago;
 use App\Models\PaqueteCliente;
@@ -217,6 +218,9 @@ class PagoController extends Controller
 
         if ($entidad instanceof Reserva) {
             $entidad->update(['estado' => 'pagada']);
+            $pago->load('reserva');
+            // Disparar evento en tiempo real
+            PaymentReceived::dispatch($pago);
         } elseif ($entidad instanceof PaqueteCliente) {
             $entidad->update(['estado' => 'activo']);
         }

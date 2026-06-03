@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\ReservationCancelled;
+use App\Events\ReservationCompleted;
+use App\Events\ReservationConfirmed;
+use App\Events\ReservationCreated;
 use App\Http\Controllers\Controller;
 use App\Models\PaqueteCliente;
 use App\Models\Reserva;
@@ -130,6 +134,9 @@ class ReservaController extends Controller
         $this->notificaciones->reservaSolicitadaCliente($reserva);
         $this->notificaciones->reservaSolicitadaProfesional($reserva);
 
+        // Disparar evento en tiempo real
+        ReservationCreated::dispatch($reserva);
+
         return response()->json($reserva->load(['servicio', 'cliente', 'profesional']), 201);
     }
 
@@ -162,6 +169,9 @@ class ReservaController extends Controller
         $reserva->load(['servicio', 'cliente', 'profesional']);
 
         $this->notificaciones->reservaConfirmada($reserva);
+
+        // Disparar evento en tiempo real
+        ReservationConfirmed::dispatch($reserva);
 
         return response()->json($reserva);
     }
@@ -215,6 +225,9 @@ class ReservaController extends Controller
 
         $this->notificaciones->reservaCancelada($reserva, $request->user());
 
+        // Disparar evento en tiempo real
+        ReservationCancelled::dispatch($reserva);
+
         return response()->json($reserva);
     }
 
@@ -231,8 +244,12 @@ class ReservaController extends Controller
         }
 
         $reserva->update(['estado' => 'finalizada']);
+        $reserva->load(['servicio', 'cliente', 'profesional']);
 
-        return response()->json($reserva->load(['servicio', 'cliente', 'profesional']));
+        // Disparar evento en tiempo real
+        ReservationCompleted::dispatch($reserva);
+
+        return response()->json($reserva);
     }
 
     /**

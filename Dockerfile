@@ -29,7 +29,7 @@ RUN composer dump-autoload --optimize \
     && sed -i 's/\r$//' docker-entrypoint.sh \
     && chmod +x docker-entrypoint.sh
 
-EXPOSE 8000
+EXPOSE 8000 8080
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
