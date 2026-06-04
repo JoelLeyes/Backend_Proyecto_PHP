@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use App\Services\AtlasLogService;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
@@ -36,5 +37,12 @@ class Handler extends ExceptionHandler
                 // No interrumpir el flujo si Atlas no responde.
             }
         });
+    }
+
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        return response()->json([
+            'message' => 'Unauthenticated.',
+        ], 401);
     }
 }
