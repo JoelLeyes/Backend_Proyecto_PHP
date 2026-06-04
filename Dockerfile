@@ -6,12 +6,13 @@ RUN apt-get update && apt-get install -y \
         libzip-dev \
         libicu-dev \
         libzstd-dev \
+        libssl-dev \
         unzip \
         git \
         postgresql-client \
     && docker-php-ext-install pdo pdo_pgsql pgsql zip intl bcmath pcntl \
-    && pecl install redis \
-    && pecl install mongodb \
+    && pecl install redis-6.1.0 \
+    && pecl install mongodb-1.19.3 \
     && docker-php-ext-enable redis \
     && docker-php-ext-enable mongodb \
     && update-ca-certificates \
