@@ -23,10 +23,10 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 COPY composer.json composer.lock* ./
-RUN composer update --no-dev --no-scripts --no-autoloader --ignore-platform-req=ext-mongodb
+RUN composer install --no-dev --no-scripts --no-autoloader --ignore-platform-reqs
 
 COPY . .
-RUN composer dump-autoload --optimize --ignore-platform-req=ext-mongodb \
+RUN composer dump-autoload --optimize \
     && sed -i 's/\r$//' docker-entrypoint.sh \
     && chmod +x docker-entrypoint.sh
 
