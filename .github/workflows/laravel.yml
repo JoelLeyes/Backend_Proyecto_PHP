@@ -28,9 +28,6 @@ jobs:
       - name: Install Dependencies
         run: composer update --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --ignore-platform-req=ext-mongodb
 
-      - name: Discover packages
-        run: php artisan package:discover --ansi
-
       - name: Generate key
         run: php artisan key:generate
 
