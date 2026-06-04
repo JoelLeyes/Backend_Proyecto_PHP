@@ -26,7 +26,7 @@ COPY composer.json composer.lock* ./
 RUN composer install --no-dev --no-scripts --no-autoloader --ignore-platform-reqs
 
 COPY . .
-RUN composer dump-autoload --optimize \
+RUN composer dump-autoload --optimize --no-scripts \
     && sed -i 's/\r$//' docker-entrypoint.sh \
     && chmod +x docker-entrypoint.sh
 
