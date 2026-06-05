@@ -265,7 +265,7 @@ class ReservaController extends Controller
         $reserva->load(['servicio', 'cliente', 'profesional']);
 
         $this->notificaciones->reservaReprogramada($reserva);
-        ReservaActualizada::dispatch($reserva);
+        ReservaActualizada::dispatch($reserva, 'reprogramada');
 
         return response()->json($reserva);
     }

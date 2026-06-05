@@ -13,7 +13,7 @@ class ReservaActualizada implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Reserva $reserva) {}
+    public function __construct(public Reserva $reserva, public string $accion = '') {}
 
     public function broadcastOn(): array
     {
@@ -38,6 +38,7 @@ class ReservaActualizada implements ShouldBroadcastNow
                 'profesional',
                 'resena',
             ])->toArray(),
+            'accion' => $this->accion,
         ];
     }
 }
