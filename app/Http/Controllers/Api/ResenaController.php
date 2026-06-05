@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\ReservaActualizada;
 use App\Http\Controllers\Controller;
 use App\Models\Profesional;
 use App\Models\Reserva;
@@ -95,6 +96,15 @@ class ResenaController extends Controller
 
         $reserva->loadMissing(['cliente', 'profesional', 'servicio']);
         $this->notificaciones->resenaCreada($reserva, $resena);
+
+        // Avisar en tiempo real para refrescar la vista del profesional/cliente.
+        ReservaActualizada::dispatch($reserva->fresh([
+            'servicio.profesional',
+            'servicio.ubicacion',
+            'cliente',
+            'profesional',
+            'resena',
+        ]));
 
         return response()->json($resena->load(['evaluador', 'profesional', 'reserva']), 201);
     }
