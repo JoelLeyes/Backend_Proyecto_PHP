@@ -40,7 +40,7 @@ class AuthController extends Controller
         return in_array($proveedor, self::PROVEEDORES_OAUTH, true);
     }
 
-    private function proveedorOAuthConfigurado(string $proveedor): bool
+    private function proveedorOAuthConfigurado(): bool
     {
         return (bool) config('services.google.client_id') && (bool) config('services.google.client_secret');
     }
@@ -204,13 +204,16 @@ class AuthController extends Controller
     {
         abort_unless($this->proveedorOAuthValido($provider), 404);
 
-        if (!$this->proveedorOAuthConfigurado($provider)) {
+        if (!$this->proveedorOAuthConfigurado()) {
             return $this->redirigirAFrontend([
                 'oauth_error' => 'El inicio de sesión con ' . ucfirst($provider) . ' no está configurado en el servidor.',
             ]);
         }
 
-        return Socialite::driver($provider)->stateless()->redirect();
+        /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+        $driver = Socialite::driver($provider);
+
+        return $driver->stateless()->redirect();
     }
 
     /**
@@ -229,7 +232,9 @@ class AuthController extends Controller
 
         if (!$oauthError) {
             try {
-                $socialUsuario = Socialite::driver($provider)->stateless()->user();
+                /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
+                $driver = Socialite::driver($provider);
+                $socialUsuario = $driver->stateless()->user();
             } catch (Throwable $e) {
                 $this->atlasLogService->registrarError($e, [
                     'route' => "auth/{$provider}/callback",
@@ -325,30 +330,38 @@ class AuthController extends Controller
     private function resolverUsuarioOAuth(SocialiteUser $socialUsuario): array
     {
         $email = $socialUsuario->getEmail();
+        $usuario = null;
+        $pendingToken = null;
+        $error = null;
 
         if (!$email) {
-            return [null, null, 'El proveedor no devolvió un email válido.'];
+            $error = 'El proveedor no devolvió un email válido.';
         }
 
-        $usuario = User::query()->where('email', $email)->first();
+        if (!$error) {
+            $usuario = User::query()->where('email', $email)->first();
+        }
 
         if ($usuario && !$usuario->activo) {
-            return [null, null, 'Tu cuenta está desactivada. Contactá al administrador.'];
+            $error = 'Tu cuenta está desactivada. Contactá al administrador.';
+            $usuario = null;
         }
 
         // Usuario existente: sincronizar y continuar
         if ($usuario) {
-            return [$this->sincronizarUsuarioExistenteOAuth($usuario, $socialUsuario), null, null];
+            $usuario = $this->sincronizarUsuarioExistenteOAuth($usuario, $socialUsuario);
         }
 
         // Usuario nuevo: guardar datos en cache y pedir que elija rol
-        $pendingToken = bin2hex(random_bytes(16));
-        Cache::put("oauth_pending_{$pendingToken}", [
-            'name'   => $socialUsuario->getName() ?: $socialUsuario->getNickname() ?: 'Usuario',
-            'email'  => $email,
-            'avatar' => $socialUsuario->getAvatar(),
-        ], now()->addMinutes(30));
+        if (!$usuario && !$error) {
+            $pendingToken = bin2hex(random_bytes(16));
+            Cache::put("oauth_pending_{$pendingToken}", [
+                'name'   => $socialUsuario->getName() ?: $socialUsuario->getNickname() ?: 'Usuario',
+                'email'  => $email,
+                'avatar' => $socialUsuario->getAvatar(),
+            ], now()->addMinutes(30));
+        }
 
-        return [null, $pendingToken, null];
+        return [$usuario, $pendingToken, $error];
     }
 }
