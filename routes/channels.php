@@ -25,7 +25,7 @@ Broadcast::channel('reservas.{userId}', function ($user, $userId) {
 // Canal privado para notificaciones de un profesional
 Broadcast::channel('professional.{professionalId}', function ($user, $professionalId) {
     // El usuario debe ser el profesional o un admin
-    return $user->id == $professionalId || $user->isAdmin();
+    return $user->id == $professionalId || $user->esAdmin();
 });
 
 // Canal privado para notificaciones de un cliente
