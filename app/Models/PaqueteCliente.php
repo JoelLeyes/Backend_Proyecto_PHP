@@ -72,10 +72,23 @@ class PaqueteCliente extends Model
     }
 
     /**
-     * Verifica si el paquete tiene sesiones disponibles para usar.
+     * Verifica si el paquete está activo y tiene sesiones sin consumir.
+     * No considera reservas activas pendientes de ocurrir — eso lo hace el controlador.
      */
     public function tieneSesionesDisponibles(): bool
     {
         return $this->estado === 'activo' && $this->sesiones_usadas < $this->sesiones_total;
+    }
+
+    /**
+     * Sesiones que aún no ocurrieron (usadas + reservas activas).
+     * Requiere haber cargado la relación reservas previamente o ejecuta una query.
+     */
+    public function sesionesLibres(): int
+    {
+        $activas = $this->reservas()
+            ->whereNotIn('estado', ['cancelada', 'no_asistida', 'finalizada'])
+            ->count();
+        return max(0, $this->sesiones_total - $this->sesiones_usadas - $activas);
     }
 }

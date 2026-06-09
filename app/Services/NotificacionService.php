@@ -106,6 +106,27 @@ class NotificacionService
     }
 
     /**
+     * Envía el recordatorio de cita al cliente X horas antes.
+     * X = horas_cancelacion del profesional + 3 (para que le dé tiempo de cancelar).
+     */
+    public function recordatorioReserva(Reserva $reserva): void
+    {
+        $cliente = $reserva->cliente;
+        if (!$this->puedeNotificar($cliente)) return;
+
+        $horasCancelacion = $reserva->servicio?->profesional?->horas_cancelacion ?? 0;
+        $horasParaCancelar = $horasCancelacion;
+
+        $this->enviar('recordatorio_reserva', $cliente->email, $cliente->name, [
+            'nombre_servicio'    => $reserva->servicio->nombre,
+            'fecha_hora'         => $this->formatear($reserva->fecha_hora),
+            'nombre_profesional' => $reserva->profesional->name,
+            'modalidad'          => $reserva->modalidad,
+            'horas_cancelacion'  => $horasParaCancelar,
+        ]);
+    }
+
+    /**
      * Avisa al profesional cuando recibe una nueva reseña.
      */
     public function resenaCreada(Reserva $reserva, mixed $resena): void

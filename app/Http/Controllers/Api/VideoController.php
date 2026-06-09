@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\ReservaActualizada;
 use App\Http\Controllers\Controller;
 use App\Models\Reserva;
 use App\Models\SesionVideo;
@@ -34,6 +35,12 @@ class VideoController extends Controller
         $estadosValidos = ['confirmada', 'pagada', 'en_curso'];
         if (!in_array($reserva->estado, $estadosValidos)) {
             return response()->json(['error' => 'La reserva no está lista para videollamada.'], 422);
+        }
+
+        // El primer participante que se une activa el estado en_curso
+        if (in_array($reserva->estado, ['confirmada', 'pagada'])) {
+            $reserva->update(['estado' => 'en_curso']);
+            ReservaActualizada::dispatch($reserva->fresh(['servicio', 'cliente', 'profesional']), 'en_curso');
         }
 
         // Crear sesión de video si no existe

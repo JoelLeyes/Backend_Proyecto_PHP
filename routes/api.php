@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DisponibilidadController;
+use App\Http\Controllers\Api\NotificacionAppController;
 use App\Http\Controllers\Api\PagoController;
 use App\Http\Controllers\Api\PaqueteController;
 use App\Http\Controllers\Api\ProfesionalController;
@@ -125,6 +126,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Reseñas recibidas por el profesional
     Route::get('mis-resenas', [ResenaController::class, 'resenasPorProfesional']);
+
+    // Notificaciones de la campana (historial persistente)
+    Route::get('notificaciones',              [NotificacionAppController::class, 'index']);
+    Route::post('notificaciones/leer-todas',  [NotificacionAppController::class, 'leerTodas']);
 
     // Paquetes del cliente
     Route::get('mis-paquetes', [PaqueteController::class, 'misPaquetes']);

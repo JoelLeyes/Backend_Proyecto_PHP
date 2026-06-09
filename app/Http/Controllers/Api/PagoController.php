@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Events\PaymentReceived;
+use App\Events\ReservaActualizada;
 use App\Http\Controllers\Controller;
+use App\Models\NotificacionApp;
 use App\Models\Pago;
 use App\Models\PaqueteCliente;
 use App\Models\Profesional;
@@ -218,11 +219,21 @@ class PagoController extends Controller
 
         if ($entidad instanceof Reserva) {
             $entidad->update(['estado' => 'pagada']);
-            $pago->load('reserva');
-            // Disparar evento en tiempo real
-            PaymentReceived::dispatch($pago);
+            $entidad->load(['servicio', 'cliente', 'profesional']);
+            NotificacionApp::crear(
+                $entidad->profesional_id,
+                'success',
+                '💳',
+                'Pago recibido',
+                "{$entidad->cliente->name} pagó la reserva de {$entidad->servicio->nombre}."
+            );
+            ReservaActualizada::dispatch($entidad, 'pagada');
         } elseif ($entidad instanceof PaqueteCliente) {
-            $entidad->update(['estado' => 'activo']);
+            $entidad->update([
+                'estado'            => 'activo',
+                'fecha_compra'      => now(),
+                'fecha_vencimiento' => now()->addYear(),
+            ]);
         }
     }
 }

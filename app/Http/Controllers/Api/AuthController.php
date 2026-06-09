@@ -63,7 +63,7 @@ class AuthController extends Controller
             $validados = $request->validate([
                 'name'      => 'required|string|max:255',
                 'email'     => 'required|email|unique:users',
-                'password'  => ['required', 'confirmed', Password::min(8)],
+                'password'  => ['required', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
                 'rol'       => 'required|in:cliente,profesional',
                 'telefono'  => ['nullable', 'regex:/^\+?[\d\s\-()+]{6,20}$/'],
             ]);

@@ -36,13 +36,15 @@ class Reserva extends Model
         'fecha_cancelacion',
         'cancelado_por',
         'motivo_cancelacion',
+        'recordatorio_enviado_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'fecha_hora'        => 'datetime',
-            'fecha_cancelacion' => 'datetime',
+            'fecha_hora'              => 'datetime',
+            'fecha_cancelacion'       => 'datetime',
+            'recordatorio_enviado_at' => 'datetime',
         ];
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\ReservaActualizada;
 use App\Http\Controllers\Controller;
+use App\Models\NotificacionApp;
 use App\Models\PaqueteCliente;
 use App\Models\Reserva;
 use App\Models\Servicio;
@@ -82,7 +83,17 @@ class ReservaController extends Controller
             if (!$paqueteCliente) {
                 return response()->json(['error' => 'El paquete no existe o no te pertenece.'], 422);
             }
-            if (!$paqueteCliente->tieneSesionesDisponibles()) {
+            // Verificar sesiones libres: usadas + reservas activas pendientes de ocurrir
+            if ($paqueteCliente->estado !== 'activo') {
+                return response()->json(['error' => 'Este paquete no está activo.'], 422);
+            }
+            $reservasActivasConPaquete = Reserva::where('paquete_cliente_id', $paqueteCliente->id)
+                ->whereNotIn('estado', ['cancelada', 'no_asistida', 'finalizada'])
+                ->count();
+            $sesionesLibres = $paqueteCliente->sesiones_total
+                - $paqueteCliente->sesiones_usadas
+                - $reservasActivasConPaquete;
+            if ($sesionesLibres <= 0) {
                 return response()->json(['error' => 'Este paquete no tiene sesiones disponibles.'], 422);
             }
             if ($paqueteCliente->paqueteServicio->servicio_id !== $servicio->id) {
@@ -119,15 +130,18 @@ class ReservaController extends Controller
             'notas'              => $validados['notas'] ?? null,
         ]);
 
-        // Consumir sesión del paquete si se usó uno
-        if ($paqueteCliente) {
-            $paqueteCliente->increment('sesiones_usadas');
-            if ($paqueteCliente->sesiones_usadas >= $paqueteCliente->sesiones_total) {
-                $paqueteCliente->update(['estado' => 'consumido']);
-            }
-        }
-
         $reserva->load(['servicio.profesional', 'cliente', 'profesional']);
+
+        $servicio  = $reserva->servicio->nombre;
+        $cliente   = $reserva->cliente->name;
+
+        // Notificación campana → profesional: nueva reserva recibida
+        NotificacionApp::crear(
+            $reserva->profesional_id, 'info', '📅',
+            'Nueva reserva',
+            "Nueva reserva de {$cliente} para {$servicio}."
+        );
+
         $this->notificaciones->reservaSolicitadaCliente($reserva);
         $this->notificaciones->reservaSolicitadaProfesional($reserva);
 
@@ -163,6 +177,13 @@ class ReservaController extends Controller
 
         $reserva->update(['estado' => 'confirmada']);
         $reserva->load(['servicio', 'cliente', 'profesional']);
+
+        // Notificación campana → cliente: su reserva fue confirmada
+        NotificacionApp::crear(
+            $reserva->cliente_id, 'success', '✅',
+            'Reserva confirmada',
+            "Tu reserva de {$reserva->servicio->nombre} fue confirmada."
+        );
 
         $this->notificaciones->reservaConfirmada($reserva);
 
@@ -206,16 +227,21 @@ class ReservaController extends Controller
         ]);
         $reserva->load(['servicio', 'cliente', 'profesional']);
 
-        // Devolver sesión al paquete si la reserva usaba uno
-        if ($reserva->paquete_cliente_id) {
-            $paquete = PaqueteCliente::find($reserva->paquete_cliente_id);
-            if ($paquete && $paquete->sesiones_usadas > 0) {
-                $nuevasUsadas = $paquete->sesiones_usadas - 1;
-                $paquete->update([
-                    'sesiones_usadas' => $nuevasUsadas,
-                    'estado'          => $nuevasUsadas < $paquete->sesiones_total ? 'activo' : 'consumido',
-                ]);
-            }
+        $servicio = $reserva->servicio->nombre;
+
+        // Notificación campana a la contraparte de quien canceló
+        if ($request->user()->id === $reserva->cliente_id) {
+            NotificacionApp::crear(
+                $reserva->profesional_id, 'warning', '❌',
+                'Reserva cancelada',
+                "La reserva de {$reserva->cliente->name} para {$servicio} fue cancelada."
+            );
+        } else {
+            NotificacionApp::crear(
+                $reserva->cliente_id, 'error', '❌',
+                'Reserva cancelada',
+                "Tu reserva de {$servicio} fue cancelada."
+            );
         }
 
         $this->notificaciones->reservaCancelada($reserva, $request->user());
@@ -240,6 +266,25 @@ class ReservaController extends Controller
         $reserva->update(['estado' => 'finalizada']);
         $reserva->load(['servicio', 'cliente', 'profesional']);
 
+        // Notificación campana → cliente: sesión finalizada
+        NotificacionApp::crear(
+            $reserva->cliente_id, 'info', '🏁',
+            'Sesión finalizada',
+            "Tu sesión de {$reserva->servicio->nombre} finalizó."
+        );
+
+        // Consumir sesión del paquete al ocurrir la sesión (no al reservar)
+        if ($reserva->paquete_cliente_id) {
+            $paquete = PaqueteCliente::find($reserva->paquete_cliente_id);
+            if ($paquete && $paquete->estado === 'activo') {
+                $nuevasUsadas = $paquete->sesiones_usadas + 1;
+                $paquete->update([
+                    'sesiones_usadas' => $nuevasUsadas,
+                    'estado'          => $nuevasUsadas >= $paquete->sesiones_total ? 'consumido' : 'activo',
+                ]);
+            }
+        }
+
         ReservaActualizada::dispatch($reserva);
 
         return response()->json($reserva);
@@ -263,6 +308,23 @@ class ReservaController extends Controller
 
         $reserva->update(['fecha_hora' => $validados['fecha_hora'], 'estado' => 'confirmada']);
         $reserva->load(['servicio', 'cliente', 'profesional']);
+
+        $servicio  = $reserva->servicio->nombre;
+        $fechaHora = Carbon::parse($reserva->fecha_hora)
+            ->setTimezone(config('app.timezone', 'America/Montevideo'))
+            ->format('d/m/Y \a \l\a\s H:i');
+
+        // Notificación campana → cliente y profesional: reserva reprogramada
+        NotificacionApp::crear(
+            $reserva->cliente_id, 'info', '📅',
+            'Reserva reprogramada',
+            "Tu reserva de {$servicio} fue reprogramada para el {$fechaHora}."
+        );
+        NotificacionApp::crear(
+            $reserva->profesional_id, 'info', '📅',
+            'Reserva reprogramada',
+            "La reserva de {$reserva->cliente->name} para {$servicio} fue reprogramada al {$fechaHora}."
+        );
 
         $this->notificaciones->reservaReprogramada($reserva);
         ReservaActualizada::dispatch($reserva, 'reprogramada');
