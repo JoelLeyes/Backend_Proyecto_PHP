@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\PaqueteClienteActualizado;
 use App\Events\ReservaActualizada;
 use App\Http\Controllers\Controller;
 use App\Models\NotificacionApp;
@@ -234,6 +235,11 @@ class PagoController extends Controller
                 'fecha_compra'      => now(),
                 'fecha_vencimiento' => now()->addYear(),
             ]);
+
+            PaqueteClienteActualizado::dispatch(
+                $entidad->fresh(['paqueteServicio.servicio.profesional.usuario']),
+                'activo'
+            );
         }
     }
 }

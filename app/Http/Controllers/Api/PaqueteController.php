@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\PaqueteServicioActualizado;
 use App\Http\Controllers\Controller;
 use App\Models\PaqueteCliente;
 use App\Models\PaqueteServicio;
@@ -45,6 +46,8 @@ class PaqueteController extends Controller
 
         $paquete = $servicio->paquetes()->create($validados);
 
+        PaqueteServicioActualizado::dispatch($paquete->fresh(['servicio.profesional.usuario']), 'creado');
+
         return response()->json($paquete, 201);
     }
 
@@ -66,6 +69,8 @@ class PaqueteController extends Controller
 
         $paquete->update($validados);
 
+        PaqueteServicioActualizado::dispatch($paquete->fresh(['servicio.profesional.usuario']), 'actualizado');
+
         return response()->json($paquete);
     }
 
@@ -78,6 +83,8 @@ class PaqueteController extends Controller
         $this->authorize('manage', $profesional);
 
         $paquete->update(['activo' => false]);
+
+        PaqueteServicioActualizado::dispatch($paquete->fresh(['servicio.profesional.usuario']), 'desactivado');
 
         return response()->json(['mensaje' => 'Paquete desactivado correctamente.']);
     }
