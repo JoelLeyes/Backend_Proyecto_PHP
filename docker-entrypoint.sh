@@ -124,6 +124,16 @@ if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
     php artisan migrate --force
 fi
 
+# ── 4b. SEEDER (primera vez) ──────────────────────────────────────────────────
+# Si la tabla users está vacía, corre el seeder para crear el admin y datos demo.
+# Solo siembra una vez — en reinicios posteriores la tabla ya tiene datos y lo omite.
+USER_COUNT=$(php artisan tinker --execute="echo App\Models\User::count();" 2>/dev/null | tail -1)
+if [ "${USER_COUNT:-0}" = "0" ]; then
+    echo "Base de datos vacía. Ejecutando seeder..."
+    php artisan db:seed --force
+    echo "Seeder completado."
+fi
+
 # ── 5. CARPETAS DE ALMACENAMIENTO ─────────────────────────────────────────────
 # Laravel necesita estas carpetas con permisos de escritura para funcionar.
 # Las crea si no existen (en un contenedor nuevo el filesystem está vacío).

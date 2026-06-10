@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
         User::create([
             'name'     => 'Administrador',
             'email'    => 'admin@serviciospro.com',
-            'password' => 'admin1234',
+            'password' => 'Admin@ServiPro2026!',
             'rol'      => 'admin',
         ]);
 
@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         $usuarioProfesional = User::create([
             'name'     => 'Laura Pérez',
             'email'    => 'laura@ejemplo.com',
-            'password' => 'password',
+            'password' => 'Laura@Coaching2026!',
             'rol'      => 'profesional',
             'telefono' => '099123456',
         ]);
@@ -77,7 +77,7 @@ class DatabaseSeeder extends Seeder
         $usuarioCliente = User::create([
             'name'     => 'Carlos Gómez',
             'email'    => 'carlos@ejemplo.com',
-            'password' => 'password',
+            'password' => 'Carlos@Cliente2026!',
             'rol'      => 'cliente',
             'telefono' => '091987654',
         ]);
