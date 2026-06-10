@@ -28,7 +28,7 @@ class AuthRegressionTest extends TestCase
     public function test_user_can_register_and_login(): void
     {
         $email    = 'user+' . Str::random(8) . '@example.com';
-        $password = 'Password123';
+        $password = 'Password123!';
 
         $register = $this->postJson('/api/auth/registrar', [
             'name'                  => 'Usuario Test',
