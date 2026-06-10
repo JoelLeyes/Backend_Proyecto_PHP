@@ -230,7 +230,7 @@ class PagoController extends Controller
                 "{$entidad->cliente->name} pagó la reserva de {$entidad->servicio->nombre}."
             );
             ReservaActualizada::dispatch($entidad, 'pagada');
-            CobroActualizado::dispatch($pago->fresh(), $entidad->profesional_id, 'reserva_pagada');
+            CobroActualizado::dispatch($pago->fresh(), $entidad->servicio->profesional_id, 'reserva_pagada');
         } elseif ($entidad instanceof PaqueteCliente) {
             $entidad->update([
                 'estado'            => 'activo',
