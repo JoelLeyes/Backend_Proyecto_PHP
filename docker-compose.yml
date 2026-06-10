@@ -13,6 +13,32 @@
 #   docker compose down -v   (borra datos)
 # ============================================================
 
+x-backend-env: &backend-env
+  APP_ENV: local
+  APP_URL: http://localhost:8000
+  DB_CONNECTION: pgsql
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_DATABASE: servicios_pro
+  DB_USERNAME: postgres
+  DB_PASSWORD: postgres
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: ""
+  QUEUE_CONNECTION: redis
+  CACHE_STORE: redis
+  SESSION_DRIVER: database
+  MAIL_MAILER: smtp
+  MAIL_HOST: smtp.gmail.com
+  MAIL_PORT: 587
+  MAIL_USERNAME: yoelleyes2013@gmail.com
+  MAIL_PASSWORD: "bdvz hvna choi hbyf"
+  MAIL_ENCRYPTION: tls
+  MAIL_FROM_ADDRESS: yoelleyes2013@gmail.com
+  MAIL_FROM_NAME: AgendaOnline
+  SANCTUM_STATEFUL_DOMAINS: localhost:5173,localhost:3000
+  FRONTEND_URL: http://localhost:5173
+
 services:
   app:
     build:
@@ -24,8 +50,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
-      APP_ENV: local
+    environment: *backend-env
     volumes:
       - storage_avatars:/app/storage/app/public/avatars
 
@@ -40,7 +65,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      APP_ENV: local
+      <<: *backend-env
       REVERB_PORT: 8080
     command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
 
@@ -52,8 +77,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
-      APP_ENV: local
+    environment: *backend-env
     command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=3"]
 
   postgres:
