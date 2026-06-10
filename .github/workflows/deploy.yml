@@ -69,6 +69,7 @@ jobs:
           kubectl apply -f k8s/backend-configmap.yaml
           kubectl apply -f k8s/backend-secret.yaml
           kubectl apply -f k8s/backend-deployment.yaml
+          kubectl apply -f k8s/queue-worker-deployment.yaml
 
       - name: Patch PayPal and LiveKit credentials
         run: |
@@ -95,4 +96,6 @@ jobs:
       - name: Rollout restart
         run: |
           kubectl rollout restart deployment backend -n $K8S_NAMESPACE
+          kubectl rollout restart deployment queue-worker -n $K8S_NAMESPACE
           kubectl rollout status deployment backend -n $K8S_NAMESPACE --timeout=20m
+          kubectl rollout status deployment queue-worker -n $K8S_NAMESPACE --timeout=20m

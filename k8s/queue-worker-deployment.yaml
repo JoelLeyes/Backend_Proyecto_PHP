@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-worker
+  namespace: proyecto2026
+  labels:
+    app: queue-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: queue-worker
+  template:
+    metadata:
+      labels:
+        app: queue-worker
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: queue-worker
+          image: 919820529775.dkr.ecr.us-east-1.amazonaws.com/proyecto/backend:latest
+          imagePullPolicy: Always
+          command:
+            - php
+            - artisan
+            - queue:work
+            - redis
+            - --tries=3
+            - --sleep=3
+            - --timeout=120
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "250m"
+              memory: "512Mi"
