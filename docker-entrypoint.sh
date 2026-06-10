@@ -14,8 +14,6 @@ cleanup() {
             kill "$pid" 2>/dev/null || true
         fi
     done
-
-    wait 2>/dev/null || true
 }
 
 trap cleanup TERM INT
