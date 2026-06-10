@@ -25,11 +25,19 @@ class ProfesionalController extends Controller
             ->where('activo', true);
 
         if ($request->filled('modalidad')) {
-            $consulta->where('modalidad', $request->modalidad);
+            $consulta->whereHas('servicios', fn($q) =>
+                $q->where('modalidad', $request->modalidad)->where('activo', true)
+            );
         }
 
         if ($request->filled('ciudad')) {
-            $consulta->where('ciudad', 'ilike', '%' . $request->ciudad . '%');
+            $termino = $request->ciudad;
+            $consulta->whereHas('servicios', fn($s) =>
+                $s->where('activo', true)
+                  ->whereHas('ubicacion', fn($u) =>
+                      $u->where('ciudad', 'ilike', "%$termino%")
+                  )
+            );
         }
 
         if ($request->filled('busqueda')) {
