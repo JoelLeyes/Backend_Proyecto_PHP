@@ -24,6 +24,17 @@ class AtlasLogService
         ]);
     }
 
+    public function registrarEmailBienvenida(string $email, bool $exito, array $contexto = []): void
+    {
+        $this->registrar(
+            'email_bienvenida',
+            $exito ? 'Email de bienvenida encolado' : 'Email de bienvenida fallido',
+            $email,
+            $contexto,
+            ['status' => $exito ? 'queued' : 'failed']
+        );
+    }
+
     public function registrarCreacionUsuario(?string $email, bool $exito, array $contexto = []): void
     {
         $this->registrar(

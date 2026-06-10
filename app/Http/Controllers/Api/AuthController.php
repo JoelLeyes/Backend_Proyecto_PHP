@@ -87,16 +87,12 @@ class AuthController extends Controller
 
             try {
                 Mail::to($usuario->email)->queue(new WelcomeMail($usuario));
-                Log::info('Welcome email queued for ' . $usuario->email);
+                $this->atlasLogService->registrarEmailBienvenida($usuario->email, true, ['origen' => 'registro']);
             } catch (Throwable $mailException) {
-                Log::error('Welcome email failed for ' . $usuario->email . ': ' . $mailException->getMessage(), [
-                    'exception' => get_class($mailException),
-                    'trace' => $mailException->getTraceAsString(),
-                ]);
-                $this->atlasLogService->registrarError($mailException, [
-                    'route' => 'api/auth/registrar',
-                    'user_email' => $usuario->email,
-                    'mail_action' => 'welcome_email',
+                Log::error('Welcome email failed for ' . $usuario->email . ': ' . $mailException->getMessage());
+                $this->atlasLogService->registrarEmailBienvenida($usuario->email, false, [
+                    'origen'    => 'registro',
+                    'exception' => $mailException->getMessage(),
                 ]);
             }
 
@@ -299,6 +295,17 @@ class AuthController extends Controller
 
         if ($usuario->esProfesional()) {
             Profesional::create(['user_id' => $usuario->id]);
+        }
+
+        try {
+            Mail::to($usuario->email)->queue(new WelcomeMail($usuario));
+            $this->atlasLogService->registrarEmailBienvenida($usuario->email, true, ['origen' => 'oauth']);
+        } catch (Throwable $mailException) {
+            Log::error('Welcome email failed (OAuth) for ' . $usuario->email . ': ' . $mailException->getMessage());
+            $this->atlasLogService->registrarEmailBienvenida($usuario->email, false, [
+                'origen'    => 'oauth',
+                'exception' => $mailException->getMessage(),
+            ]);
         }
 
         $token = $usuario->createToken('oauth_google')->plainTextToken;
