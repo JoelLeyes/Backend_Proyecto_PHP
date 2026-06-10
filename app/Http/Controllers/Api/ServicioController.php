@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\ServicioActualizado;
 use App\Http\Controllers\Controller;
 use App\Models\Profesional;
 use App\Models\Servicio;
@@ -46,6 +47,9 @@ class ServicioController extends Controller
         ]);
 
         $servicio = $profesional->servicios()->create($validados);
+        $servicio->refresh();
+
+        ServicioActualizado::dispatch($servicio, 'creado');
 
         return response()->json($servicio, 201);
     }
@@ -80,7 +84,9 @@ class ServicioController extends Controller
 
         $servicio->update($validados);
 
-        return response()->json($servicio);
+    ServicioActualizado::dispatch($servicio->fresh(), 'actualizado');
+
+    return response()->json($servicio->fresh());
     }
 
     /**
@@ -93,6 +99,8 @@ class ServicioController extends Controller
 
         $servicio->update(['activo' => false]);
 
-        return response()->json(['mensaje' => 'Servicio desactivado correctamente.']);
+        ServicioActualizado::dispatch($servicio->fresh(), 'desactivado');
+
+        return response()->json(['mensaje' => 'Servicio desactivado correctamente.', 'servicio' => $servicio->fresh()]);
     }
 }
