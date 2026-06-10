@@ -35,6 +35,8 @@ Route::prefix('auth')->group(function () {
     Route::post('registrar', [AuthController::class, 'registrar']);
     Route::post('iniciar-sesion', [AuthController::class, 'iniciarSesion'])->middleware(RegistrarIntentoLogin::class);
     Route::post('oauth/completar', [AuthController::class, 'completarRegistroOAuth']);
+    Route::post('recuperar-contrasena', [AuthController::class, 'solicitarRecuperacion']);
+    Route::post('restablecer-contrasena', [AuthController::class, 'restablecerContrasena']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('cerrar-sesion', [AuthController::class, 'cerrarSesion']);

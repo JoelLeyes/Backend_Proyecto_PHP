@@ -4,6 +4,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Mail\PasswordResetMail;
 use App\Mail\WelcomeMail;
 use App\Http\Controllers\Controller;
 use App\Models\Profesional;
@@ -20,6 +21,9 @@ use Illuminate\Validation\Rules\Password;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Password as PasswordBroker;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -314,6 +318,80 @@ class AuthController extends Controller
             'usuario' => $usuario->load('profesional'),
             'token'   => $token,
         ], 201);
+    }
+
+    /**
+     * POST /api/auth/recuperar-contrasena
+     * Genera un token y envía el email con el enlace de recuperación.
+     */
+    public function solicitarRecuperacion(Request $request): JsonResponse
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $usuario = User::where('email', $request->email)->first();
+
+        // Respuesta genérica para no revelar si el email existe
+        if (!$usuario) {
+            return response()->json(['mensaje' => 'Si el email está registrado, recibirás un enlace en breve.']);
+        }
+
+        $token = Str::random(64);
+
+        DB::table('password_reset_tokens')->upsert(
+            ['email' => $usuario->email, 'token' => Hash::make($token), 'created_at' => now()],
+            ['email'],
+            ['token', 'created_at']
+        );
+
+        $url = rtrim(config('app.frontend_url', config('app.url')), '/')
+            . '/auth/nueva-contrasena?token=' . $token . '&email=' . urlencode($usuario->email);
+
+        try {
+            Mail::to($usuario->email)->send(new PasswordResetMail($usuario, $url));
+        } catch (Throwable $e) {
+            Log::error('Password reset email failed for ' . $usuario->email . ': ' . $e->getMessage());
+        }
+
+        return response()->json(['mensaje' => 'Si el email está registrado, recibirás un enlace en breve.']);
+    }
+
+    /**
+     * POST /api/auth/restablecer-contrasena
+     * Valida el token y actualiza la contraseña del usuario.
+     */
+    public function restablecerContrasena(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email'    => 'required|email',
+            'token'    => 'required|string',
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()->symbols()],
+        ]);
+
+        $registro = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$registro || !Hash::check($request->token, $registro->token)) {
+            return response()->json(['error' => 'El enlace no es válido.'], 422);
+        }
+
+        if (now()->diffInMinutes($registro->created_at) > 60) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return response()->json(['error' => 'El enlace expiró. Solicitá uno nuevo.'], 422);
+        }
+
+        $usuario = User::where('email', $request->email)->first();
+
+        if (!$usuario) {
+            return response()->json(['error' => 'El enlace no es válido.'], 422);
+        }
+
+        $usuario->update(['password' => Hash::make($request->password)]);
+        $usuario->tokens()->delete();
+
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json(['mensaje' => 'Contraseña actualizada. Ya podés iniciar sesión.']);
     }
 
     private function sincronizarUsuarioExistenteOAuth(User $usuario, SocialiteUser $socialUsuario): User
