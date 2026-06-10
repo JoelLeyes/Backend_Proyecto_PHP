@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\CobroActualizado;
 use App\Events\PaqueteClienteActualizado;
 use App\Events\ReservaActualizada;
 use App\Http\Controllers\Controller;
@@ -229,6 +230,7 @@ class PagoController extends Controller
                 "{$entidad->cliente->name} pagó la reserva de {$entidad->servicio->nombre}."
             );
             ReservaActualizada::dispatch($entidad, 'pagada');
+            CobroActualizado::dispatch($pago->fresh(), $entidad->profesional_id, 'reserva_pagada');
         } elseif ($entidad instanceof PaqueteCliente) {
             $entidad->update([
                 'estado'            => 'activo',
@@ -239,6 +241,11 @@ class PagoController extends Controller
             PaqueteClienteActualizado::dispatch(
                 $entidad->fresh(['paqueteServicio.servicio.profesional.usuario']),
                 'activo'
+            );
+            CobroActualizado::dispatch(
+                $pago->fresh(),
+                $entidad->paqueteServicio->servicio->profesional_id,
+                'paquete_pagado'
             );
         }
     }
