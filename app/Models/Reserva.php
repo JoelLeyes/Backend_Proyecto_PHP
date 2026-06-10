@@ -48,6 +48,27 @@ class Reserva extends Model
         ];
     }
 
+    public static function endAtSqlExpression(?string $driver = null): string
+    {
+        $driver ??= self::query()->getConnection()->getDriverName();
+
+        return match ($driver) {
+            'sqlite' => "datetime(fecha_hora, '+' || duracion_minutos || ' minutes')",
+            'mysql', 'mariadb' => 'DATE_ADD(fecha_hora, INTERVAL duracion_minutos MINUTE)',
+            default => "fecha_hora + (duracion_minutos * interval '1 minute')",
+        };
+    }
+
+    public static function currentTimestampSqlExpression(?string $driver = null): string
+    {
+        $driver ??= self::query()->getConnection()->getDriverName();
+
+        return match ($driver) {
+            'sqlite', 'mysql', 'mariadb' => 'CURRENT_TIMESTAMP',
+            default => 'NOW()',
+        };
+    }
+
     // ─── Relaciones ────────────────────────────────────────────────────────
 
     /**

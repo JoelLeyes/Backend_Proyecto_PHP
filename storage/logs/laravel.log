@@ -51,3 +51,131 @@
 #23 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/artisan(14): Illuminate/Foundation/Console/Kernel->handle()
 #24 {main}
 "} 
+[2026-06-10 00:22:29] production.ERROR: Pusher\Pusher::__construct(): Argument #1 ($auth_key) must be of type string, null given, called in C:\Program Files\Ampps\www\Proyecto2026\Backend_Proyecto_PHP\vendor\laravel\framework\src\Illuminate\Broadcasting\BroadcastManager.php on line 341 {"exception":"[object] (TypeError(code: 0): Pusher\\Pusher::__construct(): Argument #1 ($auth_key) must be of type string, null given, called in C:\\Program Files\\Ampps\\www\\Proyecto2026\\Backend_Proyecto_PHP\\vendor\\laravel\\framework\\src\\Illuminate\\Broadcasting\\BroadcastManager.php on line 341 at C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/pusher/pusher-php-server/src/Pusher.php:63)
+[stacktrace]
+#0 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(341): Pusher/Pusher->__construct()
+#1 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(319): Illuminate/Broadcasting/BroadcastManager->pusher()
+#2 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(308): Illuminate/Broadcasting/BroadcastManager->createPusherDriver()
+#3 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(286): Illuminate/Broadcasting/BroadcastManager->createReverbDriver()
+#4 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(257): Illuminate/Broadcasting/BroadcastManager->resolve()
+#5 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(246): Illuminate/Broadcasting/BroadcastManager->get()
+#6 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(523): Illuminate/Broadcasting/BroadcastManager->driver()
+#7 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(361): Illuminate/Broadcasting/BroadcastManager->__call()
+#8 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/routes/channels.php(16): Illuminate/Support/Facades/Facade::__callStatic()
+#9 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/app/Providers/AppServiceProvider.php(15): require('...')
+#10 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Providers/AppServiceProvider->boot()
+#11 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#12 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(95): Illuminate/Container/Util::unwrapIfClosure()
+#13 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod()
+#14 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call()
+#15 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1151): Illuminate/Container/Container->call()
+#16 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1132): Illuminate/Foundation/Application->bootProvider()
+#17 [internal function]: Illuminate/Foundation/Application->Illuminate/Foundation/{closure}()
+#18 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1131): array_walk()
+#19 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/BootProviders.php(17): Illuminate/Foundation/Application->boot()
+#20 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/BootProviders->bootstrap()
+#21 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(474): Illuminate/Foundation/Application->bootstrapWith()
+#22 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate/Foundation/Console/Kernel->bootstrap()
+#23 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/artisan(14): Illuminate/Foundation/Console/Kernel->handle()
+#24 {main}
+"} 
+[2026-06-10 00:23:42] production.ERROR: Pusher\Pusher::__construct(): Argument #1 ($auth_key) must be of type string, null given, called in C:\Program Files\Ampps\www\Proyecto2026\Backend_Proyecto_PHP\vendor\laravel\framework\src\Illuminate\Broadcasting\BroadcastManager.php on line 341 {"exception":"[object] (TypeError(code: 0): Pusher\\Pusher::__construct(): Argument #1 ($auth_key) must be of type string, null given, called in C:\\Program Files\\Ampps\\www\\Proyecto2026\\Backend_Proyecto_PHP\\vendor\\laravel\\framework\\src\\Illuminate\\Broadcasting\\BroadcastManager.php on line 341 at C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/pusher/pusher-php-server/src/Pusher.php:63)
+[stacktrace]
+#0 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(341): Pusher/Pusher->__construct()
+#1 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(319): Illuminate/Broadcasting/BroadcastManager->pusher()
+#2 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(308): Illuminate/Broadcasting/BroadcastManager->createPusherDriver()
+#3 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(286): Illuminate/Broadcasting/BroadcastManager->createReverbDriver()
+#4 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(257): Illuminate/Broadcasting/BroadcastManager->resolve()
+#5 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(246): Illuminate/Broadcasting/BroadcastManager->get()
+#6 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(523): Illuminate/Broadcasting/BroadcastManager->driver()
+#7 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(361): Illuminate/Broadcasting/BroadcastManager->__call()
+#8 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/routes/channels.php(16): Illuminate/Support/Facades/Facade::__callStatic()
+#9 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/app/Providers/AppServiceProvider.php(15): require('...')
+#10 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Providers/AppServiceProvider->boot()
+#11 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#12 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(95): Illuminate/Container/Util::unwrapIfClosure()
+#13 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod()
+#14 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call()
+#15 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1151): Illuminate/Container/Container->call()
+#16 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1132): Illuminate/Foundation/Application->bootProvider()
+#17 [internal function]: Illuminate/Foundation/Application->Illuminate/Foundation/{closure}()
+#18 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1131): array_walk()
+#19 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/BootProviders.php(17): Illuminate/Foundation/Application->boot()
+#20 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/BootProviders->bootstrap()
+#21 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(474): Illuminate/Foundation/Application->bootstrapWith()
+#22 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate/Foundation/Console/Kernel->bootstrap()
+#23 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/artisan(14): Illuminate/Foundation/Console/Kernel->handle()
+#24 {main}
+"} 
+[2026-06-10 00:24:17] production.ERROR: Pusher\Pusher::__construct(): Argument #1 ($auth_key) must be of type string, null given, called in C:\Program Files\Ampps\www\Proyecto2026\Backend_Proyecto_PHP\vendor\laravel\framework\src\Illuminate\Broadcasting\BroadcastManager.php on line 341 {"exception":"[object] (TypeError(code: 0): Pusher\\Pusher::__construct(): Argument #1 ($auth_key) must be of type string, null given, called in C:\\Program Files\\Ampps\\www\\Proyecto2026\\Backend_Proyecto_PHP\\vendor\\laravel\\framework\\src\\Illuminate\\Broadcasting\\BroadcastManager.php on line 341 at C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/pusher/pusher-php-server/src/Pusher.php:63)
+[stacktrace]
+#0 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(341): Pusher/Pusher->__construct()
+#1 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(319): Illuminate/Broadcasting/BroadcastManager->pusher()
+#2 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(308): Illuminate/Broadcasting/BroadcastManager->createPusherDriver()
+#3 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(286): Illuminate/Broadcasting/BroadcastManager->createReverbDriver()
+#4 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(257): Illuminate/Broadcasting/BroadcastManager->resolve()
+#5 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(246): Illuminate/Broadcasting/BroadcastManager->get()
+#6 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(523): Illuminate/Broadcasting/BroadcastManager->driver()
+#7 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(361): Illuminate/Broadcasting/BroadcastManager->__call()
+#8 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/routes/channels.php(16): Illuminate/Support/Facades/Facade::__callStatic()
+#9 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/app/Providers/AppServiceProvider.php(15): require('...')
+#10 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Providers/AppServiceProvider->boot()
+#11 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#12 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(95): Illuminate/Container/Util::unwrapIfClosure()
+#13 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod()
+#14 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call()
+#15 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1151): Illuminate/Container/Container->call()
+#16 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1132): Illuminate/Foundation/Application->bootProvider()
+#17 [internal function]: Illuminate/Foundation/Application->Illuminate/Foundation/{closure}()
+#18 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1131): array_walk()
+#19 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/BootProviders.php(17): Illuminate/Foundation/Application->boot()
+#20 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/BootProviders->bootstrap()
+#21 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(474): Illuminate/Foundation/Application->bootstrapWith()
+#22 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate/Foundation/Console/Kernel->bootstrap()
+#23 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/artisan(14): Illuminate/Foundation/Console/Kernel->handle()
+#24 {main}
+"} 
+[2026-06-10 00:24:37] production.ERROR: Pusher\Pusher::__construct(): Argument #1 ($auth_key) must be of type string, null given, called in C:\Program Files\Ampps\www\Proyecto2026\Backend_Proyecto_PHP\vendor\laravel\framework\src\Illuminate\Broadcasting\BroadcastManager.php on line 341 {"exception":"[object] (TypeError(code: 0): Pusher\\Pusher::__construct(): Argument #1 ($auth_key) must be of type string, null given, called in C:\\Program Files\\Ampps\\www\\Proyecto2026\\Backend_Proyecto_PHP\\vendor\\laravel\\framework\\src\\Illuminate\\Broadcasting\\BroadcastManager.php on line 341 at C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/pusher/pusher-php-server/src/Pusher.php:63)
+[stacktrace]
+#0 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(341): Pusher/Pusher->__construct()
+#1 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(319): Illuminate/Broadcasting/BroadcastManager->pusher()
+#2 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(308): Illuminate/Broadcasting/BroadcastManager->createPusherDriver()
+#3 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(286): Illuminate/Broadcasting/BroadcastManager->createReverbDriver()
+#4 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(257): Illuminate/Broadcasting/BroadcastManager->resolve()
+#5 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(246): Illuminate/Broadcasting/BroadcastManager->get()
+#6 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Broadcasting/BroadcastManager.php(523): Illuminate/Broadcasting/BroadcastManager->driver()
+#7 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(361): Illuminate/Broadcasting/BroadcastManager->__call()
+#8 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/routes/channels.php(16): Illuminate/Support/Facades/Facade::__callStatic()
+#9 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/app/Providers/AppServiceProvider.php(15): require('...')
+#10 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Providers/AppServiceProvider->boot()
+#11 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#12 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(95): Illuminate/Container/Util::unwrapIfClosure()
+#13 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod()
+#14 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Container/Container.php(696): Illuminate/Container/BoundMethod::call()
+#15 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1151): Illuminate/Container/Container->call()
+#16 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1132): Illuminate/Foundation/Application->bootProvider()
+#17 [internal function]: Illuminate/Foundation/Application->Illuminate/Foundation/{closure}()
+#18 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1131): array_walk()
+#19 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/BootProviders.php(17): Illuminate/Foundation/Application->boot()
+#20 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(342): Illuminate/Foundation/Bootstrap/BootProviders->bootstrap()
+#21 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(474): Illuminate/Foundation/Application->bootstrapWith()
+#22 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(196): Illuminate/Foundation/Console/Kernel->bootstrap()
+#23 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/artisan(14): Illuminate/Foundation/Console/Kernel->handle()
+#24 {main}
+"} 
+[2026-06-10 00:25:13] production.ERROR: Command "test" is not defined.
+
+Did you mean one of these?
+    make:test
+    schedule:test {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \"test\" is not defined.
+
+Did you mean one of these?
+    make:test
+    schedule:test at C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/symfony/console/Application.php:759)
+[stacktrace]
+#0 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/symfony/console/Application.php(298): Symfony/Component/Console/Application->find()
+#1 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/symfony/console/Application.php(195): Symfony/Component/Console/Application->doRun()
+#2 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run()
+#3 C:/Program Files/Ampps/www/Proyecto2026/Backend_Proyecto_PHP/artisan(14): Illuminate/Foundation/Console/Kernel->handle()
+#4 {main}
+"} 

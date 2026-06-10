@@ -106,12 +106,17 @@ class ReservaController extends Controller
             $inicio = Carbon::parse($validados['fecha_hora']);
             $fin    = $inicio->copy()->addMinutes($servicio->duracion_minutos);
 
-            return Reserva::where('profesional_id', $servicio->profesional->user_id)
+            $reservasCandidatas = Reserva::where('profesional_id', $servicio->profesional->user_id)
                 ->whereNotIn('estado', ['cancelada', 'no_asistida'])
                 ->where('fecha_hora', '<', $fin)
-                ->whereRaw("fecha_hora + (duracion_minutos * interval '1 minute') > ?", [$inicio])
                 ->lockForUpdate()
-                ->exists();
+                ->get();
+
+            return $reservasCandidatas->contains(function (Reserva $reserva) use ($inicio) {
+                $finReserva = Carbon::parse($reserva->fecha_hora)->addMinutes($reserva->duracion_minutos);
+
+                return $finReserva->greaterThan($inicio);
+            });
         });
 
         if ($hayConflicto) {

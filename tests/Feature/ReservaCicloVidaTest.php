@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Events\ReservaActualizada;
 use App\Models\Profesional;
 use App\Models\Reserva;
 use App\Models\Servicio;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -24,6 +26,7 @@ class ReservaCicloVidaTest extends TestCase
     {
         parent::setUp();
         Http::fake();
+        Event::fake([ReservaActualizada::class]);
         config()->set('services.notificaciones.url', 'http://notificaciones.test');
         config()->set('services.notificaciones.token', 'token-test');
 
