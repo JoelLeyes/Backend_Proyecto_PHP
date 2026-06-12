@@ -11,7 +11,7 @@ use Illuminate\Console\Command;
 class EnviarRecordatoriosReservas extends Command
 {
     protected $signature   = 'reservas:recordatorios';
-    protected $description = 'Envía recordatorio de cita al cliente X horas antes (horas_cancelacion + 3).';
+    protected $description = 'Envía recordatorio de cita al cliente una hora antes del turno.';
 
     public function __construct(private NotificacionService $notificaciones)
     {
@@ -21,6 +21,8 @@ class EnviarRecordatoriosReservas extends Command
     public function handle(): int
     {
         // Traer reservas activas futuras que aún no recibieron recordatorio
+        // y calcular si ya entraron en la ventana de una hora antes del turno.
+        /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Reserva> $candidatas */
         $candidatas = Reserva::with(['servicio.profesional', 'cliente', 'profesional'])
             ->whereIn('estado', ['confirmada', 'pagada'])
             ->whereNull('recordatorio_enviado_at')
@@ -30,12 +32,11 @@ class EnviarRecordatoriosReservas extends Command
         $enviados = 0;
 
         foreach ($candidatas as $reserva) {
-            $horasCancelacion = $reserva->servicio?->profesional?->horas_cancelacion ?? 0;
-            $horasAviso       = $horasCancelacion + 3;
-            $momentoEnvio     = Carbon::parse($reserva->fecha_hora)->subHours($horasAviso);
+            /** @var \App\Models\Reserva $reserva */
+            $momentoEnvio = Carbon::parse($reserva->fecha_hora)->subHour();
 
             if ($momentoEnvio->lte(now())) {
-                $this->enviarRecordatorio($reserva, $horasCancelacion);
+                $this->enviarRecordatorio($reserva);
                 $reserva->update(['recordatorio_enviado_at' => now()]);
                 $enviados++;
             }
@@ -46,7 +47,7 @@ class EnviarRecordatoriosReservas extends Command
         return Command::SUCCESS;
     }
 
-    private function enviarRecordatorio(Reserva $reserva, int $horasCancelacion): void
+    private function enviarRecordatorio(Reserva $reserva): void
     {
         $servicio  = $reserva->servicio->nombre;
         $profesional = $reserva->profesional->name;
@@ -54,17 +55,13 @@ class EnviarRecordatoriosReservas extends Command
             ->setTimezone(config('app.timezone', 'America/Montevideo'))
             ->format('d/m/Y \a \l\a\s H:i');
 
-        $aviso = $horasCancelacion > 0
-            ? " Tenés {$horasCancelacion}h para cancelar o reprogramar si lo necesitás."
-            : '';
-
         // Notificación campana persistente
         NotificacionApp::crear(
             $reserva->cliente_id,
             'info',
             '🔔',
             'Recordatorio de cita',
-            "Tu sesión de {$servicio} con {$profesional} es el {$fechaHora}.{$aviso}"
+            "Falta una hora para tu sesión de {$servicio} con {$profesional}. Es el {$fechaHora}."
         );
 
         // Email vía microservicio de notificaciones

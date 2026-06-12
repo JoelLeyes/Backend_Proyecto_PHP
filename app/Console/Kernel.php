@@ -21,7 +21,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('reservas:finalizar')->everyFiveMinutes();
-        $schedule->command('reservas:recordatorios')->everyFifteenMinutes();
+        $schedule->command('reservas:recordatorios')->everyMinute();
         $schedule->command('paquetes:vencer')->dailyAt('00:05');
         $schedule->command('notificaciones:limpiar')->dailyAt('03:00');
     }

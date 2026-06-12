@@ -81,7 +81,9 @@ class NotificacionService
             ? $reserva->profesional
             : $reserva->cliente;
 
-        if (!$this->puedeNotificar($destinatario)) return;
+        if (!$this->puedeNotificar($destinatario)) {
+            return;
+        }
 
         $this->enviar('reserva_cancelada', $destinatario->email, $destinatario->name, [
             'nombre_servicio'    => $reserva->servicio->nombre,
@@ -96,7 +98,9 @@ class NotificacionService
     public function reservaReprogramada(Reserva $reserva): void
     {
         $cliente = $reserva->cliente;
-        if (!$this->puedeNotificar($cliente)) return;
+        if (!$this->puedeNotificar($cliente)) {
+            return;
+        }
 
         $this->enviar('reserva_reprogramada', $cliente->email, $cliente->name, [
             'nombre_servicio'    => $reserva->servicio->nombre,
@@ -106,13 +110,15 @@ class NotificacionService
     }
 
     /**
-     * Envía el recordatorio de cita al cliente X horas antes.
-     * X = horas_cancelacion del profesional + 3 (para que le dé tiempo de cancelar).
+        * Envía el recordatorio de cita al cliente con el contexto de la reserva
+        * y el límite de cancelación del profesional.
      */
     public function recordatorioReserva(Reserva $reserva): void
     {
         $cliente = $reserva->cliente;
-        if (!$this->puedeNotificar($cliente)) return;
+        if (!$this->puedeNotificar($cliente)) {
+            return;
+        }
 
         $horasCancelacion = $reserva->servicio?->profesional?->horas_cancelacion ?? 0;
         $horasParaCancelar = $horasCancelacion;
@@ -132,7 +138,9 @@ class NotificacionService
     public function resenaCreada(Reserva $reserva, mixed $resena): void
     {
         $profesional = $reserva->profesional;
-        if (!$this->puedeNotificar($profesional)) return;
+        if (!$this->puedeNotificar($profesional)) {
+            return;
+        }
 
         $this->enviar('resena_creada', $profesional->email, $profesional->name, [
             'nombre_servicio' => $reserva->servicio->nombre,

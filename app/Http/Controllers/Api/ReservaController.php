@@ -311,7 +311,11 @@ class ReservaController extends Controller
             return response()->json(['error' => 'Esta reserva no puede reprogramarse.'], 422);
         }
 
-        $reserva->update(['fecha_hora' => $validados['fecha_hora'], 'estado' => 'confirmada']);
+        $reserva->update([
+            'fecha_hora' => $validados['fecha_hora'],
+            'estado' => 'confirmada',
+            'recordatorio_enviado_at' => null,
+        ]);
         $reserva->load(['servicio', 'cliente', 'profesional']);
 
         $servicio  = $reserva->servicio->nombre;
