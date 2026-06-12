@@ -4,6 +4,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\AdminPanelActualizado;
 use App\Mail\PasswordResetMail;
 use App\Mail\WelcomeMail;
 use App\Http\Controllers\Controller;
@@ -88,6 +89,8 @@ class AuthController extends Controller
             if ($usuario->esProfesional()) {
                 Profesional::create(['user_id' => $usuario->id]);
             }
+
+            AdminPanelActualizado::dispatch('usuarios', 'creado');
 
             try {
                 Mail::to($usuario->email)->queue(new WelcomeMail($usuario));
@@ -189,6 +192,8 @@ class AuthController extends Controller
         }
 
         $usuario->update($validados);
+
+        AdminPanelActualizado::dispatch('usuarios', 'actualizado');
 
         return response()->json([
             'usuario' => $usuario->fresh()->load('profesional'),
@@ -301,6 +306,8 @@ class AuthController extends Controller
             Profesional::create(['user_id' => $usuario->id]);
         }
 
+        AdminPanelActualizado::dispatch('usuarios', 'creado');
+
         try {
             Mail::to($usuario->email)->queue(new WelcomeMail($usuario));
             $this->atlasLogService->registrarEmailBienvenida($usuario->email, true, ['origen' => 'oauth']);
@@ -406,6 +413,7 @@ class AuthController extends Controller
         }
         if (!empty($actualizacion)) {
             $usuario->update($actualizacion);
+            AdminPanelActualizado::dispatch('usuarios', 'actualizado');
         }
 
         return $usuario;

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\AdminPanelActualizado;
 use App\Http\Controllers\Controller;
 use App\Models\Profesional;
 use App\Models\Reserva;
@@ -97,6 +98,8 @@ class AdminController extends Controller
 
         $usuario->update($validados);
 
+        AdminPanelActualizado::dispatch('usuarios', 'actualizado');
+
         return response()->json([
             'usuario' => $usuario->fresh()->load('profesional'),
             'mensaje' => 'Usuario actualizado correctamente.',
@@ -114,6 +117,8 @@ class AdminController extends Controller
 
         $usuario->update(['activo' => !$usuario->activo]);
         $estado = $usuario->activo ? 'activado' : 'desactivado';
+
+        AdminPanelActualizado::dispatch('usuarios', 'estado_actualizado');
 
         return response()->json([
             'usuario' => $usuario,

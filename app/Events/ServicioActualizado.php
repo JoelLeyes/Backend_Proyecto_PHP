@@ -5,6 +5,7 @@ namespace App\Events;
 use App\Models\Servicio;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -22,6 +23,7 @@ class ServicioActualizado implements ShouldBroadcastNow
     {
         return [
             new Channel("profesionales.{$this->servicio->profesional_id}.servicios"),
+            new PrivateChannel('admin.panel'),
         ];
     }
 

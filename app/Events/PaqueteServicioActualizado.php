@@ -5,6 +5,7 @@ namespace App\Events;
 use App\Models\PaqueteServicio;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -22,6 +23,7 @@ class PaqueteServicioActualizado implements ShouldBroadcastNow
     {
         return [
             new Channel("servicios.{$this->paquete->servicio_id}.paquetes"),
+            new PrivateChannel('admin.panel'),
         ];
     }
 

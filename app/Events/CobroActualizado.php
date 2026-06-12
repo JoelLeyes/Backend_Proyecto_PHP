@@ -23,6 +23,7 @@ class CobroActualizado implements ShouldBroadcastNow
     {
         return [
             new PrivateChannel("professional.{$this->profesionalId}"),
+            new PrivateChannel('admin.panel'),
         ];
     }
 

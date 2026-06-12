@@ -33,3 +33,8 @@ Broadcast::channel('client.{clientId}', function ($user, $clientId) {
     // El usuario debe ser el cliente
     return $user->id == $clientId;
 });
+
+// Canal privado del panel administrativo global
+Broadcast::channel('admin.panel', function ($user) {
+    return $user->esAdmin();
+});

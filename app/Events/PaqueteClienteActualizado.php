@@ -22,6 +22,7 @@ class PaqueteClienteActualizado implements ShouldBroadcastNow
     {
         return [
             new PrivateChannel("client.{$this->paquete->cliente_id}"),
+            new PrivateChannel('admin.panel'),
         ];
     }
 
