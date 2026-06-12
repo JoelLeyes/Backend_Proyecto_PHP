@@ -33,12 +33,16 @@ class EnviarRecordatoriosReservas extends Command
 
         foreach ($candidatas as $reserva) {
             /** @var \App\Models\Reserva $reserva */
-            $momentoEnvio = Carbon::parse($reserva->fecha_hora)->subHour();
+            try {
+                $momentoEnvio = Carbon::parse($reserva->fecha_hora)->subHour();
 
-            if ($momentoEnvio->lte(now())) {
-                $this->enviarRecordatorio($reserva);
-                $reserva->update(['recordatorio_enviado_at' => now()]);
-                $enviados++;
+                if ($momentoEnvio->lte(now())) {
+                    $this->enviarRecordatorio($reserva);
+                    $reserva->update(['recordatorio_enviado_at' => now()]);
+                    $enviados++;
+                }
+            } catch (\Throwable $e) {
+                $this->warn("No se pudo enviar el recordatorio de la reserva {$reserva->id}: {$e->getMessage()}");
             }
         }
 

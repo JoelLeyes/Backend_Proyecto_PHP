@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Jobs\EnviarNotificacion;
+use App\Mail\RecordatorioReservaMail;
 use App\Models\Reserva;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Integración con el microservicio de notificaciones.
@@ -110,26 +112,22 @@ class NotificacionService
     }
 
     /**
-        * Envía el recordatorio de cita al cliente con el contexto de la reserva
-        * y el límite de cancelación del profesional.
+        * Envía el recordatorio de cita al cliente por correo directo desde el backend.
      */
     public function recordatorioReserva(Reserva $reserva): void
     {
         $cliente = $reserva->cliente;
-        if (!$this->puedeNotificar($cliente)) {
+            if (!$cliente) {
             return;
         }
 
-        $horasCancelacion = $reserva->servicio?->profesional?->horas_cancelacion ?? 0;
-        $horasParaCancelar = $horasCancelacion;
+            if (($cliente->notificaciones_email ?? true) === false) {
+                return;
+            }
 
-        $this->enviar('recordatorio_reserva', $cliente->email, $cliente->name, [
-            'nombre_servicio'    => $reserva->servicio->nombre,
-            'fecha_hora'         => $this->formatear($reserva->fecha_hora),
-            'nombre_profesional' => $reserva->profesional->name,
-            'modalidad'          => $reserva->modalidad,
-            'horas_cancelacion'  => $horasParaCancelar,
-        ]);
+            Mail::to($cliente->email)->send(new RecordatorioReservaMail(
+                $reserva->loadMissing(['servicio', 'cliente', 'profesional'])
+            ));
     }
 
     /**
