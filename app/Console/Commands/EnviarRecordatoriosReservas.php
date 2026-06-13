@@ -45,12 +45,14 @@ class EnviarRecordatoriosReservas extends Command
             if (is_null($reserva->recordatorio_anticipado_at) && $momentoAnticipado->lte(now())) {
                 $reserva->update(['recordatorio_anticipado_at' => now()]);
 
+                $horasRestantes = (int) Carbon::parse($reserva->fecha_hora)->diffInHours(now());
+
                 try {
                     NotificacionApp::crear(
                         $reserva->cliente_id,
                         'info',
                         '🔔',
-                        "Tu cita es en {$horasAnticipado} horas",
+                        "Tu cita es en {$horasRestantes} horas",
                         "Recordá que tenés una sesión de {$reserva->servicio->nombre} con {$reserva->profesional->name}.",
                     );
                 } catch (\Throwable $e) {
@@ -58,7 +60,7 @@ class EnviarRecordatoriosReservas extends Command
                 }
 
                 try {
-                    $this->notificaciones->recordatorioAnticipado($reserva, $horasAnticipado);
+                    $this->notificaciones->recordatorioAnticipado($reserva, $horasRestantes);
                     $enviados++;
                 } catch (\Throwable $e) {
                     Log::error("Email anticipado fallido para reserva {$reserva->id}: {$e->getMessage()}");
