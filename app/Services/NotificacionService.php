@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Jobs\EnviarNotificacion;
+use App\Mail\RecordatorioAnticipadoMail;
 use App\Mail\RecordatorioReservaMail;
 use App\Models\Reserva;
 use App\Models\User;
@@ -112,7 +113,27 @@ class NotificacionService
     }
 
     /**
-        * Envía el recordatorio de cita al cliente por correo directo desde el backend.
+     * Envía el recordatorio anticipado (horas_cancelacion + 3) por correo.
+     */
+    public function recordatorioAnticipado(Reserva $reserva, int $horas): void
+    {
+        $cliente = $reserva->cliente;
+        if (!$cliente) {
+            return;
+        }
+
+        if (($cliente->notificaciones_email ?? true) === false) {
+            return;
+        }
+
+        Mail::to($cliente->email)->send(new RecordatorioAnticipadoMail(
+            $reserva->loadMissing(['servicio', 'cliente', 'profesional']),
+            $horas,
+        ));
+    }
+
+    /**
+     * Envía el recordatorio de cita al cliente por correo directo desde el backend.
      */
     public function recordatorioReserva(Reserva $reserva): void
     {
