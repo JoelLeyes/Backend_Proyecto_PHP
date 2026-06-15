@@ -30,13 +30,16 @@ class ProfesionalController extends Controller
             );
         }
 
-        if ($request->filled('ciudad')) {
-            $termino = $request->ciudad;
-            $consulta->whereHas('servicios', fn($s) =>
-                $s->where('activo', true)
-                  ->whereHas('ubicacion', fn($u) =>
-                      $u->where('ciudad', 'ilike', "%$termino%")
-                  )
+        if ($request->filled('lat') && $request->filled('lng')) {
+            $lat   = (float) $request->lat;
+            $lng   = (float) $request->lng;
+            $radio = (float) ($request->radio ?? 50);
+
+            $consulta->whereHas('ubicaciones', fn($q) =>
+                $q->whereRaw(
+                    '(6371 * acos(least(1.0, cos(radians(?)) * cos(radians(latitud)) * cos(radians(longitud) - radians(?)) + sin(radians(?)) * sin(radians(latitud))))) <= ?',
+                    [$lat, $lng, $lat, $radio]
+                )
             );
         }
 
