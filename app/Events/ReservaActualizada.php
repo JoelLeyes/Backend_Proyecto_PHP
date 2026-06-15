@@ -32,14 +32,11 @@ class ReservaActualizada implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'reserva' => $this->reserva->load([
-                'servicio.profesional',
-                'servicio.ubicacion',
-                'cliente',
-                'profesional',
-                'resena',
-            ])->toArray(),
             'accion' => $this->accion,
+            'reserva_id' => $this->reserva->id,
+            'cliente_id' => $this->reserva->cliente_id,
+            'profesional_id' => $this->reserva->profesional_id,
+            'estado' => $this->reserva->estado,
         ];
     }
 }

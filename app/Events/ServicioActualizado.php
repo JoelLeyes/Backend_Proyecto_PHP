@@ -36,7 +36,9 @@ class ServicioActualizado implements ShouldBroadcast
     {
         return [
             'accion' => $this->accion,
-            'servicio' => $this->servicio->loadMissing(['ubicacion'])->toArray(),
+            'servicio_id' => $this->servicio->id,
+            'profesional_id' => $this->servicio->profesional_id,
+            'activo' => (bool) $this->servicio->activo,
         ];
     }
 }

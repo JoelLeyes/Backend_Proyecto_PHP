@@ -34,12 +34,11 @@ class PaqueteServicioActualizado implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-        $paquete = $this->paquete->loadMissing(['servicio.profesional.usuario']);
-
         return [
-            'accion'       => $this->accion,
-            'servicio_id'  => $paquete->servicio_id,
-            'paquete'      => $paquete->toArray(),
+            'accion' => $this->accion,
+            'paquete_servicio_id' => $this->paquete->id,
+            'servicio_id' => $this->paquete->servicio_id,
+            'activo' => (bool) $this->paquete->activo,
         ];
     }
 }

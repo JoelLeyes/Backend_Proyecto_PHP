@@ -36,8 +36,9 @@ class CobroActualizado implements ShouldBroadcast
     {
         return [
             'accion' => $this->accion,
+            'pago_id' => $this->pago->id,
             'profesional_id' => $this->profesionalId,
-            'pago' => $this->pago->loadMissing(['cliente', 'pagable'])->toArray(),
+            'estado' => $this->pago->estado,
         ];
     }
 }
