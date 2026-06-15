@@ -55,6 +55,10 @@ class ReservaController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        if ($request->user()->esProfesional()) {
+            return response()->json(['error' => 'Los profesionales no pueden realizar reservas.'], 403);
+        }
+
         $validados = $request->validate([
             'servicio_id'       => 'required|exists:servicios,id',
             'fecha_hora'        => 'required|date|after:now',
