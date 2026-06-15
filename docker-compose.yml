@@ -25,6 +25,7 @@ x-backend-env: &backend-env
   REDIS_HOST: redis
   REDIS_PORT: 6379
   REDIS_PASSWORD: ""
+  BROADCAST_DRIVER: reverb
   QUEUE_CONNECTION: redis
   CACHE_STORE: redis
   SESSION_DRIVER: database
@@ -38,6 +39,12 @@ x-backend-env: &backend-env
   MAIL_FROM_NAME: AgendaOnline
   SANCTUM_STATEFUL_DOMAINS: localhost:5173,localhost:3000
   FRONTEND_URL: http://localhost:5173
+  REVERB_APP_ID: 1
+  REVERB_APP_KEY: servipro-reverb-key
+  REVERB_APP_SECRET: servipro-reverb-secret-2026
+  REVERB_HOST: reverb
+  REVERB_PORT: 8080
+  REVERB_SCHEME: http
 
 services:
   app:
