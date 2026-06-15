@@ -30,17 +30,31 @@ class ProfesionalController extends Controller
             );
         }
 
-        if ($request->filled('lat') && $request->filled('lng')) {
-            $lat   = (float) $request->lat;
-            $lng   = (float) $request->lng;
-            $radio = (float) ($request->radio ?? 50);
+        if ($request->filled('ciudad')) {
+            $termino = $request->ciudad;
+            $lat     = $request->filled('lat') ? (float) $request->lat  : null;
+            $lng     = $request->filled('lng') ? (float) $request->lng  : null;
+            $radio   = (float) ($request->radio ?? 50);
 
-            $consulta->whereHas('ubicaciones', fn($q) =>
-                $q->whereRaw(
-                    '(6371 * acos(least(1.0, cos(radians(?)) * cos(radians(latitud)) * cos(radians(longitud) - radians(?)) + sin(radians(?)) * sin(radians(latitud))))) <= ?',
-                    [$lat, $lng, $lat, $radio]
-                )
-            );
+            $consulta->where(function ($q) use ($termino, $lat, $lng, $radio) {
+                // Texto: ciudad en perfil del profesional
+                $q->where('ciudad', 'ilike', "%{$termino}%");
+
+                // Texto: ciudad en ubicaciones guardadas
+                $q->orWhereHas('ubicaciones', fn($u) =>
+                    $u->where('ciudad', 'ilike', "%{$termino}%")
+                );
+
+                // Geográfico: ubicaciones dentro del radio (si Nominatim devolvió coords)
+                if ($lat !== null && $lng !== null) {
+                    $q->orWhereHas('ubicaciones', fn($u) =>
+                        $u->whereRaw(
+                            '(6371 * acos(least(1.0, cos(radians(?)) * cos(radians(latitud)) * cos(radians(longitud) - radians(?)) + sin(radians(?)) * sin(radians(latitud))))) <= ?',
+                            [$lat, $lng, $lat, $radio]
+                        )
+                    );
+                }
+            });
         }
 
         if ($request->filled('busqueda')) {
