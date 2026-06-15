@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\PaqueteClienteActualizado;
 use App\Models\PaqueteCliente;
 use App\Models\Reserva;
 use Carbon\Carbon;
@@ -37,6 +38,8 @@ class FinalizarReservasVencidas extends Command
                     'sesiones_usadas' => $nuevasUsadas,
                     'estado'          => $nuevasUsadas >= $paquete->sesiones_total ? 'consumido' : 'activo',
                 ]);
+
+                PaqueteClienteActualizado::dispatch($paquete->fresh(), 'sesion_consumida');
             }
         }
 

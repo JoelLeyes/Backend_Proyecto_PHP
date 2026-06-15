@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\PaqueteClienteActualizado;
 use App\Events\ReservaActualizada;
 use App\Http\Controllers\Controller;
 use App\Models\NotificacionApp;
@@ -291,6 +292,8 @@ class ReservaController extends Controller
                     'sesiones_usadas' => $nuevasUsadas,
                     'estado'          => $nuevasUsadas >= $paquete->sesiones_total ? 'consumido' : 'activo',
                 ]);
+
+                PaqueteClienteActualizado::dispatch($paquete->fresh(), 'sesion_consumida');
             }
         }
 
