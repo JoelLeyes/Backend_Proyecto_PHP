@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\NotificacionAppCreada;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -36,12 +37,16 @@ class NotificacionApp extends Model
      */
     public static function crear(int $usuarioId, string $tipo, string $icono, string $titulo, string $mensaje): void
     {
-        static::create([
+        $notificacion = static::create([
             'usuario_id' => $usuarioId,
             'tipo'       => $tipo,
             'icono'      => $icono,
             'titulo'     => $titulo,
             'mensaje'    => $mensaje,
         ]);
+
+        $notificacion->loadMissing('usuario.profesional');
+
+        event(new NotificacionAppCreada($notificacion));
     }
 }
