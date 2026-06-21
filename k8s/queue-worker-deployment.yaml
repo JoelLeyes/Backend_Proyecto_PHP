@@ -19,7 +19,7 @@ spec:
         - name: regcred
       containers:
         - name: queue-worker
-          image: 919820529775.dkr.ecr.us-east-1.amazonaws.com/proyecto/backend:latest
+          image: 975543725234.dkr.ecr.us-east-1.amazonaws.com/proyecto/backend:latest
           imagePullPolicy: Always
           command:
             - sh
