@@ -93,6 +93,17 @@ jobs:
             --type='merge' \
             -p "{\"data\":{\"ATLAS_MONGODB_URI\":\"$ATLAS_MONGODB_URI_B64\",\"ATLAS_LOGS_ENABLED\":\"$ATLAS_LOGS_ENABLED_B64\"}}"
 
+      - name: Remove stale backend pods before restart
+        run: |
+          BACKEND_PODS=$(kubectl get pods -n $K8S_NAMESPACE -l app=backend -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+          if [ -n "$BACKEND_PODS" ]; then
+            echo "Deleting backend pods before rollout restart:"
+            printf '%s\n' "$BACKEND_PODS"
+            kubectl delete pod -n $K8S_NAMESPACE $BACKEND_PODS --ignore-not-found --wait=false
+          else
+            echo "No backend pods found to delete."
+          fi
+
       - name: Rollout restart
         run: |
           kubectl rollout restart deployment backend -n $K8S_NAMESPACE
