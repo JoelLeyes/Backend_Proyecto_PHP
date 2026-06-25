@@ -42,7 +42,6 @@ jobs:
         run: |
           kubectl rollout status deployment/backend -n $K8S_NAMESPACE --timeout=10m
           kubectl rollout status deployment/queue-worker -n $K8S_NAMESPACE --timeout=10m
-          kubectl wait --for=condition=ready pod -l app=backend -n $K8S_NAMESPACE --timeout=10m
 
       - name: Run queue stress test inside backend pod
         run: |

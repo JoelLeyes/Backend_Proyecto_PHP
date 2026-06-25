@@ -110,4 +110,3 @@ jobs:
           kubectl rollout restart deployment queue-worker -n $K8S_NAMESPACE
           kubectl wait --for=condition=available deployment/backend -n $K8S_NAMESPACE --timeout=20m
           kubectl wait --for=condition=available deployment/queue-worker -n $K8S_NAMESPACE --timeout=20m
-          kubectl wait --for=condition=ready pod -l app=backend -n $K8S_NAMESPACE --timeout=20m
