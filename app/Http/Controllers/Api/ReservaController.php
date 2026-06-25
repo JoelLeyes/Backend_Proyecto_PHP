@@ -60,7 +60,7 @@ class ReservaController extends Controller
             return response()->json(['error' => 'Los profesionales no pueden realizar reservas.'], 403);
         }
 
-        $validados = $request->validate([
+        $validados = $request->validate([// Validación de campos para crear una reserva
             'servicio_id'       => 'required|exists:servicios,id',
             'fecha_hora'        => 'required|date|after:now',
             'modalidad'         => 'required|in:presencial,remota',
@@ -128,7 +128,7 @@ class ReservaController extends Controller
             return response()->json(['error' => 'El horario seleccionado ya no está disponible.'], 409);
         }
 
-        $reserva = Reserva::create([
+        $reserva = Reserva::create([// Crear la reserva
             'servicio_id'        => $servicio->id,
             'cliente_id'         => $request->user()->id,
             'profesional_id'     => $servicio->profesional->user_id,

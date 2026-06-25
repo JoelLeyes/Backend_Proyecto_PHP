@@ -6,11 +6,11 @@ use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
 {
-    protected $middleware = [
+    protected $middleware = [// Middleware globales que se ejecutan en cada solicitud
         \Illuminate\Http\Middleware\HandleCors::class,
     ];
 
-    protected $middlewareGroups = [
+    protected $middlewareGroups = [// Grupos de middleware para rutas web y API
         'web' => [],
         'api' => [
             'throttle:api',
@@ -18,7 +18,7 @@ class Kernel extends HttpKernel
         ],
     ];
 
-    protected $routeMiddleware = [
+    protected $routeMiddleware = [// Middleware que se pueden asignar a rutas individuales
         'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
         'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,

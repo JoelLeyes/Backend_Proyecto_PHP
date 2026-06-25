@@ -11,13 +11,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Un cliente puede dejar una sola reseña por reserva finalizada.
  * La calificación (1 a 5) actualiza el promedio del profesional.
  */
-class Resena extends Model
+class Resena extends Model // Modelo Eloquent para la tabla "resenas"
 {
     use HasFactory;
 
     protected $table = 'resenas';
 
-    protected $fillable = [
+    protected $fillable = [ 
         'reserva_id',
         'evaluador_id',
         'profesional_id',

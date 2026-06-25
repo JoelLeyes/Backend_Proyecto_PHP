@@ -15,7 +15,7 @@ use Illuminate\Validation\Rule;
  * Controlador del panel administrativo.
  * Solo accesible para usuarios con rol "admin".
  */
-class AdminController extends Controller
+class AdminController extends Controller // Controlador del panel administrativo
 {
     /**
      * GET /api/admin/estadisticas
@@ -26,7 +26,7 @@ class AdminController extends Controller
         $canceladas       = Reserva::where('estado', 'cancelada')->count();
         $finalizadas      = Reserva::where('estado', 'finalizada')->count();
 
-        return response()->json([
+        return response()->json([ // Devuelve un JSON con estadísticas del sistema
             'usuarios' => [
                 'total'         => User::count(),
                 'clientes'      => User::where('rol', 'cliente')->count(),
@@ -34,7 +34,7 @@ class AdminController extends Controller
                 'admins'        => User::where('rol', 'admin')->count(),
                 'inactivos'     => User::where('activo', false)->count(),
             ],
-            'reservas' => [
+            'reservas' => [ // Estadísticas de reservas
                 'total'             => $totalReservas,
                 'pendientes'        => Reserva::where('estado', 'pendiente')->count(),
                 'confirmadas'       => Reserva::where('estado', 'confirmada')->count(),
@@ -59,7 +59,7 @@ class AdminController extends Controller
      */
     public function usuarios(Request $request): JsonResponse
     {
-        $usuarios = User::query()
+        $usuarios = User::query() // Consulta de usuarios con filtros opcionales
             ->when($request->rol, fn($q) => $q->where('rol', $request->rol))
             ->when($request->filled('activo'), fn($q) => $q->where('activo', $request->boolean('activo')))
             ->when($request->busqueda, fn($q) => $q
@@ -78,7 +78,7 @@ class AdminController extends Controller
      */
     public function actualizarUsuario(Request $request, User $usuario): JsonResponse
     {
-        $validados = $request->validate([
+        $validados = $request->validate([ // Validación de campos para actualizar un usuario
             'name'     => 'sometimes|string|max:255',
             'email'    => ['sometimes', 'email', Rule::unique('users')->ignore($usuario->id)],
             'telefono' => 'nullable|string|max:20',
@@ -111,7 +111,7 @@ class AdminController extends Controller
      */
     public function activarDesactivar(Request $request, User $usuario): JsonResponse
     {
-        if ($usuario->id === $request->user()->id) {
+        if ($usuario->id === $request->user()->id) { // No puede desactivarse a sí mismo
             return response()->json(['error' => 'No podés desactivar tu propia cuenta.'], 422);
         }
 
@@ -120,7 +120,7 @@ class AdminController extends Controller
 
         AdminPanelActualizado::dispatch('usuarios', 'estado_actualizado');
 
-        return response()->json([
+        return response()->json([ // Devuelve el usuario actualizado y un mensaje de éxito
             'usuario' => $usuario,
             'mensaje' => "Usuario {$estado} correctamente.",
         ]);
@@ -132,7 +132,7 @@ class AdminController extends Controller
      */
     public function reservas(Request $request): JsonResponse
     {
-        $reservas = Reserva::with(['servicio', 'cliente', 'profesional'])
+        $reservas = Reserva::with(['servicio', 'cliente', 'profesional']) // Consulta de reservas con filtros opcionales
             ->when($request->filled('estado'), fn($q) => $q->where('estado', $request->estado))
             ->when($request->filled('desde'),  fn($q) => $q->whereDate('fecha_hora', '>=', $request->desde))
             ->when($request->filled('hasta'),  fn($q) => $q->whereDate('fecha_hora', '<=', $request->hasta))

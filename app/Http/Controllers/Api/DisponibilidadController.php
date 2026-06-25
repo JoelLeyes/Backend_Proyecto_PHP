@@ -39,7 +39,7 @@ class DisponibilidadController extends Controller
     {
         $this->authorize('manage', $profesional);
 
-        $validados = $request->validate([
+        $validados = $request->validate([// Validación de campos para la regla de disponibilidad
             'dia_semana'             => 'required|integer|between:0,6',
             'hora_inicio'            => 'required|date_format:H:i',
             'hora_fin'               => 'required|date_format:H:i|after:hora_inicio',

@@ -17,7 +17,9 @@ class RecordatorioAnticipadoMail extends Mailable
     public function __construct(
         public Reserva $reserva,
         public int $horas,
-    ) {}
+    ) {
+         $this->horas = abs($horas);
+    }
 
     public function envelope(): Envelope
     {

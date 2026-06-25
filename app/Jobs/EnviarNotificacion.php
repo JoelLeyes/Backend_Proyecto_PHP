@@ -18,8 +18,8 @@ class EnviarNotificacion implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 3;
-    public int $backoff = 30;
+    public int $tries   = 3; // si falla, reintenta hasta 3 veces
+    public int $backoff = 30; // espera 30 segundos entre cada reintento
 
     public function __construct(
         private readonly string $tipo,
@@ -42,7 +42,7 @@ class EnviarNotificacion implements ShouldQueue
             ]);
     }
 
-    public function failed(\Throwable $exception): void
+    public function failed(\Throwable $exception): void //crea el log del warning si falla el envío de la notificación tras los 3 intentos
     {
         Log::warning(
             "Notificación fallida [{$this->tipo}] para {$this->email} tras {$this->tries} intentos: " .

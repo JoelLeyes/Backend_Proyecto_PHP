@@ -24,13 +24,13 @@ class ProfesionalController extends Controller
         $consulta = Profesional::with('usuario')
             ->where('activo', true);
 
-        if ($request->filled('modalidad')) {
+        if ($request->filled('modalidad')) { // Filtra por modalidad de servicio
             $consulta->whereHas('servicios', fn($q) =>
                 $q->where('modalidad', $request->modalidad)->where('activo', true)
             );
         }
 
-        if ($request->filled('ciudad')) {
+        if ($request->filled('ciudad')) {// Filtra por ciudad, considerando ubicaciones guardadas y radio geográfico
             $termino = $request->ciudad;
             $lat     = $request->filled('lat') ? (float) $request->lat  : null;
             $lng     = $request->filled('lng') ? (float) $request->lng  : null;
@@ -57,7 +57,7 @@ class ProfesionalController extends Controller
             });
         }
 
-        if ($request->filled('busqueda')) {
+        if ($request->filled('busqueda')) {// Filtra por búsqueda en nombre de negocio, bio o nombre de usuario
             $termino = $request->busqueda;
             $consulta->where(function ($q) use ($termino) {
                 $q->where('nombre_negocio', 'ilike', "%$termino%")
@@ -77,7 +77,7 @@ class ProfesionalController extends Controller
      */
     public function show(Profesional $profesional): JsonResponse
     {
-        $profesional->load([
+        $profesional->load([// Carga relaciones necesarias para mostrar el perfil
             'usuario',
             'servicios' => fn($q) => $q->where('activo', true)->with('ubicacion'),
         ]);
@@ -93,7 +93,7 @@ class ProfesionalController extends Controller
     {
         $this->authorize('update', $profesional);
 
-        $validados = $request->validate([
+        $validados = $request->validate([// Validación de campos editables por el profesional
             'nombre_negocio'   => 'nullable|string|max:255',
             'bio'              => 'nullable|string',
             'modalidad'        => 'nullable|in:presencial,remota,hibrida',

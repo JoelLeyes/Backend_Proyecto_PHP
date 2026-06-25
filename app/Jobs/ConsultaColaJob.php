@@ -19,7 +19,7 @@ class ConsultaColaJob implements ShouldQueue
     public int $tries = 3;
     public int $backoff = 5;
 
-    public function __construct(
+    public function __construct(// Constructor de la tarea
         private readonly int $numero,
     ) {}
 
@@ -29,7 +29,7 @@ class ConsultaColaJob implements ShouldQueue
         $servicios = Servicio::count();
         $reservas = Reserva::count();
 
-        Log::info('Consulta de cola procesada', [
+        Log::info('Consulta de cola procesada', [// Log de información con los resultados de la consulta
             'job' => $this->numero,
             'usuarios' => $usuarios,
             'servicios' => $servicios,

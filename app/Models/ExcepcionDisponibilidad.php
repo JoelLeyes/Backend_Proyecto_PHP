@@ -24,7 +24,7 @@ class ExcepcionDisponibilidad extends Model
         'disponible',
     ];
 
-    protected function casts(): array
+    protected function casts(): array // Define los tipos de datos para los atributos del modelo
     {
         return [
             'fecha'      => 'date',
@@ -37,6 +37,6 @@ class ExcepcionDisponibilidad extends Model
      */
     public function profesional(): BelongsTo
     {
-        return $this->belongsTo(Profesional::class, 'profesional_id');
+        return $this->belongsTo(Profesional::class, 'profesional_id'); // Relación inversa: una excepción pertenece a un profesional
     }
 }

@@ -29,7 +29,7 @@ class PaqueteCliente extends Model
         'estado',
     ];
 
-    protected function casts(): array
+    protected function casts(): array // Define los tipos de datos para los atributos del modelo
     {
         return [
             'fecha_compra'      => 'datetime',

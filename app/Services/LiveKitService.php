@@ -31,7 +31,7 @@ class LiveKitService
     {
         $ahora = time();
 
-        $payload = [
+        $payload = [// Payload del JWT con los datos del participante y la sala
             'iss'  => $this->apiKey,
             'sub'  => $identidad,
             'iat'  => $ahora,
@@ -64,7 +64,7 @@ class LiveKitService
         return "{$header}.{$cuerpo}.{$firma}";
     }
 
-    private function base64url(string $data): string
+    private function base64url(string $data): string // Codifica en base64 URL-safe sin padding
     {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
